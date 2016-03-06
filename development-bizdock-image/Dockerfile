@@ -13,7 +13,13 @@ EXPOSE 9000
 RUN yum update -y && yum install -y --setopt=tsflags=nodocs epel-release && yum clean all
 
 #Required packages
-RUN yum install -y --setopt=tsflags=nodocs java-1.8.0-openjdk-devel sudo git wget unzip && yum clean all
+# java-1.8.0-openjdk-devel : full JDK to be able to run maven and compile BizDock
+# sudo : required for running some scripts under a different user than root
+# mariadb : SQL client to run some operations on the database
+# git : the git client for pulling the source code
+# wget : user to download activator and maven installations
+# unzip : for unzipping various installations packages
+RUN yum install -y --setopt=tsflags=nodocs java-1.8.0-openjdk-devel sudo mariadb git wget unzip && yum clean all
 
 #Install play
 ADD install_play.sh /tmp/install_play.sh

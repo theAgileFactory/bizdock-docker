@@ -1,5 +1,8 @@
 #!/bin/sh
 
+#Alternative entrypoint for the container
+#This one must be used interactively with "-ti" parameters
+
 HELP="Possible arguments :
 	--help (-h)
 	--useruid (-g)   : the uid of the user which is using the development environment

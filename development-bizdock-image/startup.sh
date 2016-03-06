@@ -1,9 +1,10 @@
 #!/bin/sh
 
+#Default entrypoint for the container
+#This one will configure the development environment for a first use
+
 HELP="Possible arguments :
 	--help (-h)
-	--package (-p)   : build and package bizdock for a deployment a deployment of an other system
-	--configure (-c) : configure the development environment
 	--useruid (-g)   : the uid of the user which is using the development environment
     --username (-u)  : the name of the user which is using the development environment"
 
@@ -14,12 +15,6 @@ do
 	    -h|--help)
 	    	echo $HELP
 	    	exit 0
-	    ;;
-	    -p|--package)
-	    	isPackage=true
-	    ;;
-	    -c|--configure)
-	    	isConfigure=true
 	    ;;
 	    -u|--username)
 	    	userName=$2
@@ -79,20 +74,32 @@ exec sudo -u maf /bin/sh - << eof
 	    git pull https://github.com/theAgileFactory/maf-desktop-app.git
 	fi
 	
-	#Build the project then exit
-	if [ "$isPackage" = true ] ; then
-		echo ">> Performing a full automatic build"
-	    /opt/artifacts/build.sh
-	    STATUS=$?
-	    if [ $STATUS -ne 0 ]; then
-	        exit 1
-	    fi
-	    exit 0
+    #dbmdl for the framework
+	if [ ! -d "/opt/artifacts/dbmdl-framework" ]; then
+		echo ">> Initializing dbmdl-framework"
+	    mkdir /opt/artifacts/dbmdl-framework
+	    cd /opt/artifacts/dbmdl-framework
+	    git init
+	    git pull https://github.com/theAgileFactory/dbmdl-framework.git
 	fi
 	
-	#Configure the development environment
-	if [ "$isConfigure" = true ] ; then
-		echo ">> The environment is now ready to be used interactively"
+	#dbmdl for the desktop
+	if [ ! -d "/opt/artifacts/maf-dbmdl" ]; then
+		echo ">> Initializing maf-dbmdl"
+	    mkdir /opt/artifacts/maf-dbmdl
+	    cd /opt/artifacts/maf-dbmdl
+	    git init
+	    git pull https://github.com/theAgileFactory/maf-dbmdl.git
 	fi
-
+	
+	#replacer (used for properties management)
+	if [ ! -d "/opt/artifacts/replacer" ]; then
+		echo ">> Initializing replacer"
+	    mkdir /opt/artifacts/replacer
+	    cd /opt/artifacts/replacer
+	    git init
+	    git pull https://github.com/theAgileFactory/replacer.git
+	fi
+	
+	echo ">> The environment is now ready to be used interactively"
 eof
