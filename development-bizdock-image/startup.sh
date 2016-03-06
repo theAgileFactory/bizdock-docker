@@ -38,14 +38,14 @@ if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
 	#Copy the build script
 	cp /opt/prepare/build.sh /opt/artifacts/build.sh
 	#Change the owner
-	chown maf.maf /opt/artifacts/build.sh
+	chown $userName.$userName /opt/artifacts/build.sh
 else
 	echo "No user UID provided, cannot securely create the development environment"
 	exit 1
 fi
 
 #Change to the current user for enabling the appropriate permissions
-exec sudo -u maf /bin/sh - << eof
+exec sudo -u $userName /bin/sh - << eof
 	#Pull the projects from github
 	#framework
 	if [ ! -d "/opt/artifacts/app-framework" ]; then

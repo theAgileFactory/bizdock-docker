@@ -36,8 +36,8 @@ done
 if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
 	cd /opt/artifacts
 	useradd -u $userUid $userName
-	sudo -u maf /tmp/update_bashrc.sh
-	sudo -u maf /bin/bash
+	sudo -u $userName /tmp/update_bashrc.sh
+	sudo -u $userName /bin/bash
 else
 	echo "No user UID provided, cannot securely user the development environment"
 	exit 1
