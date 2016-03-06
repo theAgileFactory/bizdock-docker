@@ -29,15 +29,27 @@ RUN chmod u+x /tmp/install_play.sh;/tmp/install_play.sh
 ADD install_maven.sh /tmp/install_maven.sh
 RUN chmod u+x /tmp/install_maven.sh;/tmp/install_maven.sh
 
-#Install update bashrc
+#Update bashrc
 ADD update_bashrc.sh /tmp/update_bashrc.sh
 RUN chmod +x+r /tmp/update_bashrc.sh;/tmp/update_bashrc.sh
 
 # Edit sudoers file # To avoid error: sudo: sorry, you must have a tty to run sudo 
 RUN sed -i -e "s/Defaults    requiretty.*/ #Defaults    requiretty/g" /etc/sudoers
 
+#Default entrypoint script
 ADD startup.sh /opt/prepare/startup.sh
+
+#Alterative entrypoint for interactive mode
 ADD interactive.sh /opt/prepare/interactive.sh
+
+#Utility for building the source code
 ADD build.sh /opt/prepare/build.sh
-RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh
+#Utility for managing the database
+ADD db.sh /opt/prepare/db.sh
+#Configuration for the database
+ADD bizdockdb-dbmdl-framework.properties /opt/prepare/bizdockdb-dbmdl-framework.properties
+ADD bizdockdb-maf-dbmdl.properties /opt/prepare/bizdockdb-maf-dbmdl.properties
+
+RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh;chmod u+x /opt/prepare/db.sh
+
 ENTRYPOINT ["/opt/prepare/startup.sh"]

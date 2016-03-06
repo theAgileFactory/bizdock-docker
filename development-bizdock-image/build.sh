@@ -12,11 +12,12 @@ Framework () {
   mvn -f /opt/artifacts/app-framework/pom.xml clean install
   STATUS=$?
   if [ $STATUS -ne 0 ]; then
-    exit
+    exit 1
   fi
   mvn -f /opt/artifacts/app-framework/pom.xml play2:eclipse
+  STATUS=$?
   if [ $STATUS -ne 0 ]; then
-    exit
+    exit 1
   fi
   Model
 }
@@ -26,11 +27,12 @@ Model () {
   mvn -f /opt/artifacts/maf-desktop-datamodel/pom.xml clean install
   STATUS=$?
   if [ $STATUS -ne 0 ]; then
-    exit
+    exit 1
   fi
   mvn -f /opt/artifacts/maf-desktop-datamodel/pom.xml play2:eclipse
+  STATUS=$?
   if [ $STATUS -ne 0 ]; then
-    exit
+    exit 1
   fi
   sleep 5
   Desktop
@@ -41,11 +43,12 @@ Desktop () {
   mvn -f /opt/artifacts/maf-desktop-app/pom.xml clean install
   STATUS=$?
   if [ $STATUS -ne 0 ]; then
-    exit
+    exit 1
   fi
   mvn -f /opt/artifacts/maf-desktop-app/pom.xml play2:eclipse
+  STATUS=$?
   if [ $STATUS -ne 0 ]; then
-    exit
+    exit 1
   fi
 }
 

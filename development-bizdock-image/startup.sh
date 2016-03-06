@@ -37,8 +37,14 @@ if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
 	useradd -u $userUid $userName
 	#Copy the build script
 	cp /opt/prepare/build.sh /opt/artifacts/build.sh
+	cp /opt/prepare/db.sh /opt/artifacts/db.sh
+	cp /opt/prepare/bizdockdb-dbmdl-framework.properties /opt/artifacts/bizdockdb-dbmdl-framework.properties
+	cp /opt/prepare/bizdockdb-maf-dbmdl.properties /opt/artifacts/bizdockdb-maf-dbmdl.properties
 	#Change the owner
 	chown $userName.$userName /opt/artifacts/build.sh
+	chown $userName.$userName /opt/artifacts/db.sh
+	chown $userName.$userName /opt/artifacts/bizdockdb-dbmdl-framework.properties
+	chown $userName.$userName /opt/artifacts/bizdockdb-maf-dbmdl.properties
 else
 	echo "No user UID provided, cannot securely create the development environment"
 	exit 1
