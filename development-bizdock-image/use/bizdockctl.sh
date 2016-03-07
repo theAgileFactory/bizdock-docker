@@ -5,13 +5,7 @@
 #Test if docker is installed and accessible
 #TODO
 
-HELP="Possible arguments :
-	--help (-h)
-	--configure (-c)   : configure the development environment (launch the first time)
-    --interactive (-i) : open in interactive mode
-    --workspace (-w)   : the host folder in which the source code must be set
-    --port (-p)        : the port to which bizdock will listen (default is 8080)
-    --no-database (-d) : do not run a database container"
+HELP=$'Possible arguments :\n\t--help (-h)\n\t--configure (-c)\t: configure the development environment (launch the first time)\n\t--interactive (-i)\t: open in interactive mode\n\t--workspace (-w)\t: the host folder in which the source code must be set\n\t--port (-p)\t\t: the port to which bizdock will listen (default is 8080)\n\t--no-database (-d)\t: do not run a database container'
 
 bizDockPort=8080
 noDatabase=false
@@ -20,7 +14,7 @@ do
 	key="$1"
 	case $key in
 	    -h|--help)
-	    	echo $HELP
+	    	echo "$HELP"
 	    	exit 0
 	    ;;
 	    -c|--configure)
@@ -85,6 +79,6 @@ else
 		echo ">> Container launched in interactive mode"
 		docker run --net=bizdock --rm --name=bizdockdev -ti -p $bizDockPort:9000 -v bizdock_sbtcache:/root/.sbt -v bizdock_ivyrepo:/root/.ivy2  -v bizdock_mvnrepo:/root/.m2 -v $workspace:/opt/artifacts --entrypoint=/opt/prepare/interactive.sh taf/dev-app --useruid $(id -u $(whoami)) --username $(whoami)
 	else
-		echo $HELP
+		echo "$HELP"
 	fi
 fi
