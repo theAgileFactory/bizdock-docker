@@ -12,6 +12,7 @@ DB_HOST=""
 MOUNT_VOLUME=
 URL='localPORT'
 BIZDOCK_PORT=8000
+BIZDOCK_PORT_DEFAULT=8000
 DISTANT_DB=false
 
 if [ $? != 0 ] # There was an error parsing the options
@@ -101,13 +102,14 @@ if [ -z "$DB_USER_PASSWD" ]; then
   DB_USER_PASSWD=$DB_USER_PASSWD_DEFAULT
 fi
 if [ -z "$MOUNT_VOLUME" ]; then
-  MOUNT_VOLUME="-v /opt/maf/maf-file-system"
+  MOUNT_VOLUME="-v ~/maf/maf-file-system"
 fi
 
 
 #Create network
 NETWORK_TEST=$(docker network ls | grep bizdock_network)
 if [ $? -eq 1 ]; then
+  echo "---- NETWORK CREATION ----"
   docker network create bizdock_network
 fi
 
@@ -119,38 +121,38 @@ if [ $? -eq 1 ]; then
 fi
 
 
-# Build and run DB
+# Run Bizdock Database
 if [ "$DISTANT_DB" = "false" ]; then
-  docker volume create --name=bizdock_db
+  docker volume create --name=bizdock_database
 
-  docker build -f ./bizdock_db/Dockerfile -t theagilefactory/mariadb:10.1.12 .
-  INSTANCE_TEST=$(docker ps -a | grep -e "bizdockdb$")
+  INSTANCE_TEST=$(docker ps -a | grep -e "bizdock_db$")
   if [ $? -eq 1 ]; then
-    docker run --name=bizdockdb -d --net=bizdock_network $DB_HOST -v bizdockdb:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE="$DB_NAME" -e MYSQL_USER="$DB_USER" -e MYSQL_PASSWORD="$DB_USER_PASSWD" theagilefactory/mariadb:10.1.12 
+    echo "---- RUNNING DATABASE CONTAINER ----"
+    docker run --name=bizdock_db -d --net=bizdock_network $DB_HOST -v bizdock_database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE="$DB_NAME" -e MYSQL_USER="$DB_USER" -e MYSQL_PASSWORD="$DB_USER_PASSWD" theagilefactory/mariadb:10.1.12 
   fi
+else
+  echo "/!\\ Connection to a distant DB through properties files /!\\"
 fi
 
-
-# Build and run Bizdock
-docker build -f ./bizdock/Dockerfile -t theagilefactory/bizdock:11.0.1 .
+# Run Bizdock
+echo "---- RUNNING BIZDOCK ----"
 INSTANCE_TEST=$(docker ps -a | grep -e "bizdock$")
 if [ $? -eq 1 ]; then
-  docker run --name=bizdock --rm -ti --net=bizdock_network -p $BIZDOCK_PORT:8000 \
+  docker run --name=bizdock --rm -ti --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
    -v /var/opt \
    -v bizdock_backups:/var/opt/backups \
    -v /opt/mysqldump \
-   $MOUNT_VOLUME \
+   $MOUNT_VOLUME:/opt/start-config/ \
    -e PUBLIC_URL=$URL \
    theagilefactory/bizdock:11.0.1
 else
   docker stop bizdock
   docker rm bizdock
-  docker run --name=bizdock --rm -ti --net=bizdock_network -p $BIZDOCK_PORT:8000 \
+  docker run --name=bizdock --rm -ti --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
    -v /var/opt \
    -v bizdock_backups:/var/opt/backups \
    -v /opt/mysqldump \
-   $MOUNT_VOLUME \
+   $MOUNT_VOLUME:/opt/start-config/ \
    -e PUBLIC_URL=$URL \
    theagilefactory/bizdock:11.0.1
 fi
-
