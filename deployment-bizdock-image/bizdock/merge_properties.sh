@@ -25,19 +25,19 @@ if [ $STATUS -ne 0 ]; then
 fi
 
 echo "---- MERGING DBMDL-FRAMEWORK PROPERTIES ----"
-versionNumber=$(ls dbmdl-framework-*-properties.zip | grep -oP '(?<=dbmdl-framework-).*(?=-properties.zip)')
+versionNumber=$(ls dbmdl-framework-*.zip | grep -oP '(?<=dbmdl-framework-).*(?=-.zip)')
 mvn com.agifac.deploy:replacer-maven-plugin:replace -Dsource=dbmdl-framework-$versionNumber.zip -Denv=/opt/start-config/bizdockdb-dbmdl-framework.properties
 unzip -d dbmdl-framework merged-dbmdl-framework-$versionNumber.zip
 chmod u+x dbmdl-framework/scripts/*.sh
 
 echo "---- BUILDING MAF DBMDL ----"
-versionNumber=$(ls maf-dbmdl-*-properties.zip | grep -oP '(?<=maf-dbmdl-).*(?=-properties.zip)')
+versionNumber=$(ls maf-dbmdl-*.zip | grep -oP '(?<=maf-dbmdl-).*(?=-.zip)')
 mvn com.agifac.deploy:replacer-maven-plugin:replace -Dsource=maf-dbmdl-$versionNumber.zip -Denv=/opt/maf/bizdockdb-maf-dbmdl.properties
 unzip -d maf-dbmdl merged-maf-dbmdl-$versionNumber.zip
 chmod u+x maf-dbmdl/scripts/*.sh
 
 echo "---- BUILDING DESKTOP ----"
-versionNumber=$(ls maf-desktop-*-properties.zip | grep -oP '(?<=maf-desktop-).*(?=-properties.zip)')
+versionNumber=$(ls maf-desktop-*.zip | grep -oP '(?<=maf-desktop-).*(?=-.zip)')
 mvn com.agifac.deploy:replacer-maven-plugin:replace -Dsource=maf-desktop-$versionNumber.zip -Denv=/opt/maf/bizdock-maf-desktop.properties
 unzip -d maf-desktop merged-maf-desktop-$versionNumber.zip
 chmod -R u+x maf-desktop/scripts/*
