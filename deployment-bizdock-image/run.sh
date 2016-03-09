@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HELP=$'Available options: \n\t-P - main Bizdock port\n\t-n - bizdock public URL\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t-c - initialize databse'
+HELP=$'Available options: \n\t-P - main Bizdock port\n\t-n - bizdock public URL\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t--init - initialize database'
 
 DB_NAME_DEFAULT='maf'
 DB_USER_DEFAULT='maf'
@@ -9,10 +9,10 @@ DB_NAME=
 DB_USER=
 DB_USER_PASSWD=
 DB_HOST=""
-MOUNT_VOLUME=
+CONFIG_VOLUME=
 URL='localPORT'
-BIZDOCK_PORT=8000
-BIZDOCK_PORT_DEFAULT=8000
+BIZDOCK_PORT=9999
+BIZDOCK_PORT_DEFAULT=9999
 DISTANT_DB=false
 CONFIGURE_DB=false
 
@@ -24,7 +24,7 @@ then
 fi
 
 # Process the arguments
-while getopts ":P:n:ds:u:p:H:m:hc" option
+while getopts ":P:n:ds:u:p:H:c:m:h" option
 do
   case $option in
     P)
@@ -72,14 +72,18 @@ do
       fi
       ;;
     m)
-      MOUNT_VOLUME="$OPTARG"
-      MOUNT_VOLUME="-v $MOUNT_VOLUME:/opt/start-config/"
+      MAF_FS="$OPTARG"
+      MAF_FS="-v $MAF_FS:/opt/maf-file-system/"
+      ;;
+    c)
+      CONFIG_VOLUME="$OPTARG"
+      CONFIG_VOLUME="-v $CONFIG_VOLUME:/opt/start-config/"
       ;;
     h)
       echo "$HELP"
       exit 0
       ;;
-    c)
+    i)
       CONFIGURE_DB=true
       echo "$CONFIGURE_DB"
       ;;
@@ -105,8 +109,11 @@ fi
 if [ -z "$DB_USER_PASSWD" ]; then
   DB_USER_PASSWD=$DB_USER_PASSWD_DEFAULT
 fi
-if [ -z "$MOUNT_VOLUME" ]; then
-  MOUNT_VOLUME="-v /opt/start-config/"
+if [ -z "$CONFIG_VOLUME" ]; then
+  CONFIG_VOLUME="-v /opt/start-config/"
+fi
+if [ -z "$MAF_FS" ]; then
+  MAF_FS="-v /opt/maf-file-system/"
 fi
 
 
@@ -142,22 +149,24 @@ fi
 echo "---- RUNNING BIZDOCK ----"
 INSTANCE_TEST=$(docker ps -a | grep -e "bizdock$")
 if [ $? -eq 1 ]; then
-  docker run --name=bizdock --rm -ti --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
+  docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
    -v /var/opt \
    -v bizdock_backups:/var/opt/backups \
    -v /opt/mysqldump \
-   $MOUNT_VOLUME \
+   $CONFIG_VOLUME \
+   $MAF_FS \
    -e PUBLIC_URL=$URL \
    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
    theagilefactory/bizdock:11.0.1
 else
   docker stop bizdock
   docker rm bizdock
-  docker run --name=bizdock --rm -ti --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
+  docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
    -v /var/opt \
    -v bizdock_backups:/var/opt/backups \
    -v /opt/mysqldump \
-   $MOUNT_VOLUME \
+   $CONFIG_VOLUME \
+   $MAF_FS \
    -e PUBLIC_URL=$URL \
    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
    theagilefactory/bizdock:11.0.1
