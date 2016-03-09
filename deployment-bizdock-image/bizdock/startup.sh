@@ -17,6 +17,18 @@ else
   cp /opt/start-config/maf-desktop/*.conf /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf && cp /opt/start-config/maf-desktop/*.xml /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf
 fi
 
+if [ "$CONFIGURE_DB_INIT" = true ]; then
+  echo ">> Reseting the database schema"
+  mysql -h bizdock_db -u root --password=root <<EOF                                             
+DROP SCHEMA IF EXISTS maf;
+CREATE SCHEMA IF NOT EXISTS maf 
+DEFAULT CHARACTER SET utf8;
+CREATE USER IF NOT EXISTS 'maf'@'%' IDENTIFIED BY 'maf';
+GRANT ALL ON maf.* TO 'maf'@'%';
+EOF
+fi
+
+
 echo "---- REFRESH DATABASE ----"
 /opt/maf/dbmdl-framework/scripts/run.sh
 STATUS=$?
@@ -30,16 +42,33 @@ exit 1
 fi
 
 if [ "$CONFIGURE_DB_INIT" = true ]; then
-  echo ">> Reseting the database schema"
-  mysql -h bizdock_db -u root --password=root <<EOF                                             
-DROP SCHEMA IF EXISTS maf;
-CREATE SCHEMA IF NOT EXISTS maf 
-DEFAULT CHARACTER SET utf8;
-CREATE USER IF NOT EXISTS 'maf'@'%' IDENTIFIED BY 'maf';
-GRANT ALL ON maf.* TO 'maf'@'%';
-EOF
   mysql -h bizdock_db -u root --password=root maf < /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/sql/init_base.sql
 fi
 
+SSO_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep saml.sso.config | grep -oP '(?<=="/opt/maf-file-system/).*?(?=/"|")')
+if [ ! -d /opt/maf-file-system/$SSO_FOLDER ]; then
+  mkdir -p /opt/maf-file-system/$SSO_FOLDER
+fi
+
+PERSONAL_SPACE_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.personal.space.root | grep -oP '(?<=="/opt/maf-file-system/).*?(?=/"|")')
+if [ ! -d /opt/maf-file-system/$PERSONAL_SPACE_FOLDER ]; then
+  mkdir -p /opt/maf-file-system/$PERSONAL_SPACE_FOLDER
+fi
+
+FTP_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.report.custom.root | grep -oP '(?<=="/opt/maf-file-system/).*?(?=/"|")')
+if [ ! -d /opt/maf-file-system/$FTP_FOLDER ]; then
+  mkdir -p /opt/maf-file-system/$FTP_FOLDER
+fi
+
+ATTACHMENTS_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.attachments.root | grep -oP '(?<=="/opt/maf-file-system/).*?(?=/"|")')
+if [ ! -d /opt/maf-file-system/$ATTACHMENTS_FOLDER ]; then
+  mkdir -p /opt/maf-file-system/$ATTACHMENTS_FOLDER
+fi
+
+EXTENSIONS_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.ext.directory | grep -oP '(?<=="/opt/maf-file-system/).*?(?=/"|")')
+if [ ! -d /opt/maf-file-system/$EXTENSIONS_FOLDER ]; then
+  mkdir -p /opt/maf-file-system/$EXTENSIONS_FOLDER
+fi
+
 echo "---- LAUNCHING BIZDOCK APPLICATION ----"
-/opt/maf/maf-desktop/server/maf-desktop-app-dist/bin/maf-desktop-app -Dcom.agifac.appid=maf-desktop-docker -Dconfig.file=/opt/maf/maf-desktop/conf/application.conf -Dlogger.file=/opt/maf/maf-desktop/conf/application-logger.xml -Dhttp.port=8000 -DapplyEvolutions.default=false
+/opt/maf/maf-desktop/server/maf-desktop-app-dist/bin/maf-desktop-app -Dcom.agifac.appid=maf-desktop-docker -Dconfig.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application.conf -Dlogger.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist//conf/application-logger.xml -Dhttp.port=9999 -DapplyEvolutions.default=false
