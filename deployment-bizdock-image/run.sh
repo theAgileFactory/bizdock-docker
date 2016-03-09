@@ -1,7 +1,5 @@
 #!/bin/sh
-
-HELP=$'Available options: \n\t-P - main Bizdock port\n\t-n - bizdock public URL\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t--init - initialize database'
-
+HELP=$'Available options: \n\t-P - main Bizdock port\n\t-n - bizdock public URL\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t-i - initialize database' 
 DB_NAME_DEFAULT='maf'
 DB_USER_DEFAULT='maf'
 DB_USER_PASSWD_DEFAULT='maf'
@@ -10,7 +8,7 @@ DB_USER=
 DB_USER_PASSWD=
 DB_HOST=""
 CONFIG_VOLUME=
-URL='localPORT'
+URL='https://docker.the-agile-factory.com'
 BIZDOCK_PORT=9999
 BIZDOCK_PORT_DEFAULT=9999
 DISTANT_DB=false
@@ -24,7 +22,7 @@ then
 fi
 
 # Process the arguments
-while getopts ":P:n:ds:u:p:H:c:m:h" option
+while getopts ":P:n:ds:u:p:H:c:m:hi" option
 do
   case $option in
     P)
@@ -73,10 +71,18 @@ do
       ;;
     m)
       MAF_FS="$OPTARG"
+      if [ ! -d "$MAF_FS" ]; then
+        echo ">> $MAF_FS does not exist. Please create it."
+        exit 1
+      fi
       MAF_FS="-v $MAF_FS:/opt/maf-file-system/"
       ;;
     c)
       CONFIG_VOLUME="$OPTARG"
+      if [ ! -d "$CONFIG_VOLUME" ]; then
+        echo ">> $CONFIG_VOLUME does not exist. Please create it."
+        exit 1
+      fi
       CONFIG_VOLUME="-v $CONFIG_VOLUME:/opt/start-config/"
       ;;
     h)
@@ -155,9 +161,8 @@ if [ $? -eq 1 ]; then
    -v /opt/mysqldump \
    $CONFIG_VOLUME \
    $MAF_FS \
-   -e PUBLIC_URL=$URL \
    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-   theagilefactory/bizdock:11.0.1
+   theagilefactory/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 else
   docker stop bizdock
   docker rm bizdock
@@ -167,7 +172,7 @@ else
    -v /opt/mysqldump \
    $CONFIG_VOLUME \
    $MAF_FS \
-   -e PUBLIC_URL=$URL \
    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-   theagilefactory/bizdock:11.0.1
+   theagilefactory/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 fi
+
