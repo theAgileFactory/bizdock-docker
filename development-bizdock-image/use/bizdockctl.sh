@@ -73,8 +73,8 @@ else
 	if [ "$isInteractive" = true ] ; then
 		if [ "$noDatabase" = false ] ; then
 			echo ">> Starting a database container for bizdock"
-			docker run -d --net=bizdock --name=bizdockdb -v  bizdock_database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root mariadb:10.1 || echo ">> Cannot start the database container (named "bizdockdb"), this one is probably already running"
-			echo ">> WARNING: the database container (named "bizdockdb") must be stopped manually"
+			docker run -d --net=bizdock --name=bizdock_db_dev -v  bizdock_database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root mariadb:10.1 || echo ">> Cannot start the database container (named "bizdock_db_dev"), this one is probably already running"
+			echo ">> WARNING: the database container (named "bizdock_db_dev") must be stopped manually"
 		fi
 		echo ">> Container launched in interactive mode"
 		docker run --net=bizdock --rm --name=bizdockdev -ti -p $bizDockPort:9000 -v bizdock_sbtcache:/root/.sbt -v bizdock_ivyrepo:/root/.ivy2  -v bizdock_mvnrepo:/root/.m2 -v $workspace:/opt/artifacts --entrypoint=/opt/prepare/interactive.sh taf/dev-app --useruid $(id -u $(whoami)) --username $(whoami)
