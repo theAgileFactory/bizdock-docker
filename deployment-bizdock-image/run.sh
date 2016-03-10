@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HELP=$'Available options: \n\t-P - main Bizdock port\n\t-n - bizdock public URL\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-b - Path to store db backup\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t-i - initialize database' 
+HELP=$'Available options: \n\t-P - main Bizdock port\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-b - Path to store db backup\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t-i - initialize database' 
 
 DB_NAME_DEFAULT='maf'
 DB_USER_DEFAULT='maf'
@@ -10,7 +10,6 @@ DB_USER=
 DB_USER_PASSWD=
 DB_HOST=""
 CONFIG_VOLUME=
-URL='https://docker.the-agile-factory.com'
 BIZDOCK_PORT=9999
 BIZDOCK_PORT_DEFAULT=9999
 DISTANT_DB=false
@@ -24,14 +23,11 @@ then
 fi
 
 # Process the arguments
-while getopts ":P:n:ds:u:p:H:c:m:b:hi" option
+while getopts ":P:ds:u:p:H:c:m:b:hi" option
 do
   case $option in
     P)
       BIZDOCK_PORT="$OPTARG"
-      ;;
-    n)
-      URL="$OPTARG"
       ;;
     d)
       DB_USER="$DB_USER_DEFAULT"
@@ -166,7 +162,7 @@ if [ "$DISTANT_DB" = "false" ]; then
       -e MYSQL_DATABASE="$DB_NAME" \
       -e MYSQL_USER="$DB_USER" \
       -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
-      theagilefactory/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
+      taf/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
 
   fi
 else
@@ -187,7 +183,7 @@ if [ $? -eq 1 ]; then
    $CONFIG_VOLUME \
    $MAF_FS \
    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-   theagilefactory/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
+   taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 else
   docker stop bizdock
   docker rm bizdock
@@ -197,6 +193,6 @@ else
    $CONFIG_VOLUME \
    $MAF_FS \
    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-   theagilefactory/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
+   taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 fi
 
