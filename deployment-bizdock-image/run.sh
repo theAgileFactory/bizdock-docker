@@ -1,5 +1,7 @@
 #!/bin/sh
-HELP=$'Available options: \n\t-P - main Bizdock port\n\t-n - bizdock public URL\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t-i - initialize database' 
+
+HELP=$'Available options: \n\t-P - main Bizdock port\n\t-n - bizdock public URL\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-b - Path to store db backup\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t-i - initialize database' 
+
 DB_NAME_DEFAULT='maf'
 DB_USER_DEFAULT='maf'
 DB_USER_PASSWD_DEFAULT='maf'
@@ -22,7 +24,7 @@ then
 fi
 
 # Process the arguments
-while getopts ":P:n:ds:u:p:H:c:m:hi" option
+while getopts ":P:n:ds:u:p:H:c:m:b:hi" option
 do
   case $option in
     P)
@@ -38,6 +40,13 @@ do
     s)
       if [ -z "$DB_NAME" ]; then
         DB_NAME="$OPTARG"
+      fi
+      ;;
+    b)
+      DB_BACKUP="$OPTARG"
+      if [ ! -d "$DB_BACKUP" ]; then
+        echo ">> $DB_BACKUP does not exist. Please create it."
+        exit 1
       fi
       ;;
     u)
@@ -91,7 +100,6 @@ do
       ;;
     i)
       CONFIGURE_DB=true
-      echo "$CONFIGURE_DB"
       ;;
     :)
       echo "Option -$OPTARG needs an argument"
@@ -121,6 +129,9 @@ fi
 if [ -z "$MAF_FS" ]; then
   MAF_FS="-v /opt/maf-file-system/"
 fi
+if [ -z "$DB_BACKUP" ]; then
+  DB_BACKUP="-v /opt/bizdock-db-backups/"
+fi
 
 
 #Create network
@@ -145,11 +156,26 @@ if [ "$DISTANT_DB" = "false" ]; then
   INSTANCE_TEST=$(docker ps -a | grep -e "bizdock_db$")
   if [ $? -eq 1 ]; then
     echo "---- RUNNING DATABASE CONTAINER ----"
-    docker run --name=bizdock_db -d --net=bizdock_network $DB_HOST -v bizdock_database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE="$DB_NAME" -e MYSQL_USER="$DB_USER" -e MYSQL_PASSWORD="$DB_USER_PASSWD" theagilefactory/bizdock_mariadb:10.1.12 
+    echo ">> By default, the database dump is done every day at 2 am."
+    echo ">> To change that, please create a 'startup.sh' script in $DB_BACKUP that adds a crontab file"
+    echo ">>You can start from the default file in $DB_BACKUP"
+    docker run --name=bizdock_db -d --net=bizdock_network $DB_HOST \
+      -v bizdock_database:/var/lib/mysql/ \
+      -v $DB_BACKUP:/var/opt/backups/ \
+      -e MYSQL_ROOT_PASSWORD=root \
+      -e MYSQL_DATABASE="$DB_NAME" \
+      -e MYSQL_USER="$DB_USER" \
+      -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
+      theagilefactory/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
+
   fi
 else
   echo "/!\\ Connection to a distant DB through properties files /!\\"
 fi
+
+# TODO : use docker compose to manage deployment
+#wait 5 seconds to give time to DB to start correctly before bizdock
+sleep 5
 
 #Run Bizdock
 echo "---- RUNNING BIZDOCK ----"
@@ -157,7 +183,6 @@ INSTANCE_TEST=$(docker ps -a | grep -e "bizdock$")
 if [ $? -eq 1 ]; then
   docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
    -v /var/opt \
-   -v bizdock_backups:/var/opt/backups \
    -v /opt/mysqldump \
    $CONFIG_VOLUME \
    $MAF_FS \
@@ -168,7 +193,6 @@ else
   docker rm bizdock
   docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
    -v /var/opt \
-   -v bizdock_backups:/var/opt/backups \
    -v /opt/mysqldump \
    $CONFIG_VOLUME \
    $MAF_FS \
