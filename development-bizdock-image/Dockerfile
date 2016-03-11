@@ -19,7 +19,8 @@ RUN yum update -y && yum install -y --setopt=tsflags=nodocs epel-release && yum 
 # git : the git client for pulling the source code
 # wget : user to download activator and maven installations
 # unzip : for unzipping various installations packages
-RUN yum install -y --setopt=tsflags=nodocs java-1.8.0-openjdk-devel sudo mariadb git wget unzip && yum clean all
+# bc : for doing some computations in the shell
+RUN yum install -y --setopt=tsflags=nodocs java-1.8.0-openjdk-devel sudo mariadb git wget unzip bc && yum clean all
 
 #Install play
 ADD install_play.sh /tmp/install_play.sh
@@ -49,7 +50,12 @@ ADD db.sh /opt/prepare/db.sh
 #Configuration for the database
 ADD bizdockdb-dbmdl-framework.properties /opt/prepare/bizdockdb-dbmdl-framework.properties
 ADD bizdockdb-maf-dbmdl.properties /opt/prepare/bizdockdb-maf-dbmdl.properties
+ADD configuration_files/application.conf /opt/prepare/configuration_files/application.conf
+ADD configuration_files/application-logger.xml /opt/prepare/configuration_files/application-logger.xml
+ADD configuration_files/environment.conf /opt/prepare/configuration_files/environment.conf
+ADD configuration_files/framework.conf /opt/prepare/configuration_files/framework.conf
+ADD create_maf_fs.sh /opt/prepare/create_maf_fs.sh
 
-RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh;chmod u+x /opt/prepare/db.sh
+RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/create_maf_fs.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh;chmod u+x /opt/prepare/db.sh
 
 ENTRYPOINT ["/opt/prepare/startup.sh"]

@@ -1,0 +1,84 @@
+<configuration>
+
+	<conversionRule conversionWord="coloredLevel"
+		converterClass="play.api.Logger$ColoredLevel" />
+
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${application.home}/logs/application.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>application.%d{yyyy-MM-dd}.log</fileNamePattern>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%date - [%level] - from %logger in %thread %message%n%xException%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE_AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${application.home}/logs/audit.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>audit.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>60</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%date - [%level] - from %logger in %thread %message%n%xException%n</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="SYSTEM_AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${application.home}/logs/sysadmin.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>sysadmin.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date - [%level] - from %logger in %thread %message%n%xException%n</pattern>
+        </encoder>
+    </appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%date - [%level] - from %logger in %thread : %message%n%xException%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="play" level="ERROR" />
+	<logger name="application" level="ERROR" />
+	<logger name="logger.tools" level="ERROR" />
+	<logger name="be.objectify.deadbolt.java.ExecutionContextProvider" level="ERROR"/>
+	
+	<!-- Framework specific loggers -->
+	<!-- Global logger for framework services -->
+	<logger name="framework.services" level="ERROR" />
+	
+	<!-- Security and authentication -->
+	<logger name="framework.security" level="ERROR" />
+	<logger name="framework.services.account" level="ERROR" />
+	<logger name="framework.services.session" level="ERROR" />
+	
+	<!-- APIs -->
+	<logger name="framework.services.api" level="ERROR" />
+	
+	<!-- System and scheduler -->
+	<logger name="framework.services.system" level="ERROR" />
+	<logger name="framework.services.job" level="ERROR" />
+	<logger name="framework.services.database" level="ERROR" />
+	<logger name="framework.services.configuration" level="ERROR" />
+	
+	<!-- Plugins and extensions -->
+	<logger name="framework.services.ext" level="ERROR" />
+	<logger name="framework.services.actor" level="ERROR" />
+	<logger name="framework.services.plugins" level="ERROR" />
+	<!-- Framework specific loggers (end) -->
+	
+	<logger name="framework.services.audit.AuditLoggerServiceImpl" level="ERROR">
+		<appender-ref ref="FILE_AUDIT" />
+	</logger>
+    <logger name="framework.services.system.SysAdminUtilsImpl" level="DEBUG">
+        <appender-ref ref="SYSTEM_AUDIT" />
+    </logger>
+
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="FILE" />
+	</root>
+</configuration>
