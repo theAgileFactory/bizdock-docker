@@ -164,14 +164,19 @@ if [ "$DISTANT_DB" = "false" ]; then
       -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
       taf/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
 
+      # TODO : use docker compose to manage deployment
+      #wait 5 seconds to give time to DB to start correctly before bizdock
+      sleep 5
+
+      #test if db container is up
+      if [ -z "$(docker ps | grep bizdock_db$)" ]; then
+        echo "/!\\ Database container is not up. BizDock will not start /!\\"
+        exit 1
+      fi
   fi
 else
   echo "/!\\ Connection to a distant DB through properties files /!\\"
 fi
-
-# TODO : use docker compose to manage deployment
-#wait 5 seconds to give time to DB to start correctly before bizdock
-sleep 5
 
 #Run Bizdock
 echo "---- RUNNING BIZDOCK ----"

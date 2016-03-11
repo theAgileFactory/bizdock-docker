@@ -62,7 +62,7 @@ if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
     DEFAULT CHARACTER SET utf8;
     CREATE USER IF NOT EXISTS 'maf'@'%' IDENTIFIED BY 'maf';
     GRANT ALL ON maf.* TO 'maf'@'%';
-    EOF
+EOF
   fi
 
   echo "---- REFRESH DATABASE ----"
