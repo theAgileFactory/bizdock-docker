@@ -10,7 +10,7 @@ VOLUME /opt/maf-file-system/
 RUN yum update -y && yum install -y --setopt=tsflags=nodocs epel-release && yum clean all
 
 #Install required and useful packages
-RUN yum install -y --setopt=tsflags=nodocs which unzip tar mariadb telnet wget curl bzip2 xz java-1.8.0-openjdk && yum clean all
+RUN yum install -y --setopt=tsflags=nodocs bc which unzip tar mariadb telnet wget curl bzip2 xz java-1.8.0-openjdk && yum clean all
 
 RUN mkdir -p /opt/maf/maf-desktop/server
 RUN mkdir -p /tmp/deadletters/ && mkdir -p /tmp/deadletters-reprocessing
