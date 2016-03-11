@@ -79,6 +79,10 @@ After running bizdock once, you will find in this folder the default configurati
 Then, you can configure BizDock as you wish.
 To enable the modifications, you simply need to restart the container using ```docker restart bizdock``` or using the ```run.sh``` script.
 
+### Note
+
+This is important to write paths with a ```/``` at the end of them to allow the folders creation for the ```maf-file-system```.
+
 ## Logs
 
 To get logs of containers, you can run ```docker logs <container-name>```.
