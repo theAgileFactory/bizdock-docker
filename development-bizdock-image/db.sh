@@ -29,12 +29,13 @@ done
 
 if [ "$resetDatabase" = true ] ; then
 	echo ">> Reseting the database schema"
-mysql -h bizdock_db_dev -u root --password=root <<EOF
+mysql -h bizdockdb -u root --password=root <<EOF
 DROP SCHEMA IF EXISTS maf;
 CREATE SCHEMA IF NOT EXISTS maf 
 DEFAULT CHARACTER SET utf8;
 CREATE USER IF NOT EXISTS 'maf'@'%' IDENTIFIED BY 'maf';
 GRANT ALL ON maf.* TO 'maf'@'%';
+FLUSH PRIVILEGES;
 EOF
 	STATUS=$?
 	if [ $STATUS -ne 0 ]; then
@@ -89,7 +90,7 @@ fi
 
 if [ "$resetDatabase" = true ] ; then
 	echo ">> Initializing the database"
-	mysql -h bizdock_db_dev -u root --password=root maf < /opt/artifacts/maf-desktop-app/conf/sql/init_base.sql
+	mysql -h bizdockdb -u root --password=root maf < /opt/artifacts/maf-desktop-app/conf/sql/init_base.sql
 	STATUS=$?
 	if [ $STATUS -ne 0 ]; then
 	  exit 1
