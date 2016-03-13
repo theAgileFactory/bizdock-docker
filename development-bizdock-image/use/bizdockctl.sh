@@ -65,7 +65,7 @@ docker volume create --name=bizdock_database
 #Environment configuration
 if [ "$isConfigure" = true ] ; then
 	echo ">> Container launch in configuration mode"
-	docker run --net=bizdock --rm --name=bizdockdev -v bizdock_sbtcache:/root/.sbt -v bizdock_ivyrepo:/root/.ivy2 -v bizdock_mvnrepo:/root/.m2 -v $workspace:/opt/artifacts taf/dev-app --useruid $(id -u $(whoami)) --username $(whoami)
+	docker run --net=bizdock --rm --name=bizdockdev -v bizdock_sbtcache:/opt/cache/.sbt -v bizdock_ivyrepo:/opt/cache/.ivy2 -v bizdock_mvnrepo:/opt/cache/.m2 -v $workspace:/opt/artifacts taf/dev-app --useruid $(id -u $(whoami)) --username $(whoami)
 else
 	if [ "$isInteractive" = true ] ; then
 		if [ "$noDatabase" = false ] ; then
@@ -74,7 +74,7 @@ else
 			echo ">> WARNING: the database container (named "bizdockdb") must be stopped manually"
 		fi
 		echo ">> Container launched in interactive mode"
-		docker run --net=bizdock --rm --name=bizdockdev -ti -p $bizDockPort:9000 -v bizdock_sbtcache:/root/.sbt -v bizdock_ivyrepo:/root/.ivy2  -v bizdock_mvnrepo:/root/.m2 -v $workspace:/opt/artifacts --entrypoint=/opt/prepare/interactive.sh taf/dev-app --useruid $(id -u $(whoami)) --username $(whoami)
+		docker run --net=bizdock --rm --name=bizdockdev -ti -p $bizDockPort:9000 -v bizdock_sbtcache:/opt/cache/.sbt -v bizdock_ivyrepo:/opt/cache/.ivy2  -v bizdock_mvnrepo:/opt/cache/.m2 -v $workspace:/opt/artifacts --entrypoint=/opt/prepare/interactive.sh taf/dev-app --useruid $(id -u $(whoami)) --username $(whoami)
 	else
 		echo "$HELP"
 	fi

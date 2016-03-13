@@ -2,9 +2,12 @@ FROM centos:7
 
 #Volumes to store the artifacts once they are ready to be deployed
 VOLUME /opt/artifacts
-VOLUME /root/.m2
-VOLUME /root/.ivy2
-VOLUME /root/.sbt
+VOLUME /opt/cache/.m2
+VOLUME /opt/cache/.ivy2
+VOLUME /opt/cache/.sbt
+
+#Create to the cache folders for root (the same is required for the selected user)
+RUN cd /root;ln -s .m2 /opt/cache/.m2;ln -s .ivy2 /opt/cache/.ivy2;ln -s .sbt /opt/cache/.sbt;chmod -R 777 /opt/cache
 
 #Expose the port if activator is launched (in order to run the application)
 EXPOSE 9000
