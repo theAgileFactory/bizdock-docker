@@ -42,6 +42,8 @@ fi
 
 #Change the owner of the content of the workspace
 chown -R $userName.$userName /opt/artifacts
+#Change the owner of the build cache folder
+chmod -R 777 /opt/cache
 
 #Copy the build scripts and default configuration files
 cp /opt/prepare/build.sh /opt/artifacts/build.sh

@@ -186,7 +186,9 @@ echo ">> Found version number for bizdock-packaging $versionNumber"
 mvn com.agifac.deploy:replacer-maven-plugin:replace -Dsource=maf-desktop-$versionNumber.zip -Denv=/opt/artifacts/bizdock-packaging.properties
 mv /opt/artifacts/bizdock-packaging/target/$(ls merged-maf-desktop-*.zip) /opt/artifacts/deploy
 
-#Change the owner
+#Change the owner of the artifacts folder
 chown -R $userName.$userName /opt/artifacts
+#Change the owner of the build cache folder
+chmod -R 777 /opt/cache
 
 echo ">> The environment is now ready to be used interactively"
