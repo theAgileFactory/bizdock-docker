@@ -40,6 +40,12 @@ else
    userUid=1000
    useradd -u $userUid $userName
 fi
+cd /home/$userName
+ln -s /opt/cache/.m2 .m2
+ln -s /opt/cache/.ivy2 .ivy2
+ln -s /opt/cache/.sbt .sbt
+chown $userName.$userName .m2 .ivy2 .sbt
+
 
 source /etc/bashrc
 

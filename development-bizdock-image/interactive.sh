@@ -39,11 +39,16 @@ else
    userUid=1000
    useradd -u $userUid $userName
 fi
+cd /home/$userName
+#Change the owner of the build cache folder
+chmod -R 777 /opt/cache
+ln -s /opt/cache/.m2 .m2
+ln -s /opt/cache/.ivy2 .ivy2
+ln -s /opt/cache/.sbt .sbt
+chown $userName.$userName .m2 .ivy2 .sbt
 
 #Change the owner of the content of the workspace
 chown -R $userName.$userName /opt/artifacts
-#Change the owner of the build cache folder
-chmod -R 777 /opt/cache
 
 #Copy the build scripts and default configuration files
 cp /opt/prepare/build.sh /opt/artifacts/build.sh
