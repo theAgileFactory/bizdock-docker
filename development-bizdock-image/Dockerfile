@@ -7,7 +7,7 @@ VOLUME /opt/cache/.ivy2
 VOLUME /opt/cache/.sbt
 
 #Create to the cache folders for root (the same is required for the selected user)
-RUN cd /root;ln -s .m2 /opt/cache/.m2;ln -s .ivy2 /opt/cache/.ivy2;ln -s .sbt /opt/cache/.sbt;chmod -R 777 /opt/cache
+RUN mkdir -p /opt/cache/.m2;mkdir -p /opt/cache/.ivy2;mkdir -p /opt/cache/.sbt;cd /root;ln -s .m2 /opt/cache/.m2;ln -s .ivy2 /opt/cache/.ivy2;ln -s .sbt /opt/cache/.sbt;chmod -R 777 /opt/cache
 
 #Expose the port if activator is launched (in order to run the application)
 EXPOSE 9000
