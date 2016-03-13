@@ -47,14 +47,13 @@ ADD interactive.sh /opt/prepare/interactive.sh
 ADD build.sh /opt/prepare/build.sh
 #Utility for managing the database
 ADD db.sh /opt/prepare/db.sh
-#Configuration for the database
+#Utility to create the bizdock file system
+ADD create_maf_fs.sh /opt/prepare/create_maf_fs.sh
+
+#Configuration for building the various components
 ADD bizdockdb-dbmdl-framework.properties /opt/prepare/bizdockdb-dbmdl-framework.properties
 ADD bizdockdb-maf-dbmdl.properties /opt/prepare/bizdockdb-maf-dbmdl.properties
-ADD configuration_files/application.conf /opt/prepare/configuration_files/application.conf
-ADD configuration_files/application-logger.xml /opt/prepare/configuration_files/application-logger.xml
-ADD configuration_files/environment.conf /opt/prepare/configuration_files/environment.conf
-ADD configuration_files/framework.conf /opt/prepare/configuration_files/framework.conf
-ADD create_maf_fs.sh /opt/prepare/create_maf_fs.sh
+ADD bizdock-packaging.properties /opt/prepare/bizdock-packaging.properties
 
 RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/create_maf_fs.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh;chmod u+x /opt/prepare/db.sh
 

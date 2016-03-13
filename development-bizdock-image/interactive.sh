@@ -3,7 +3,7 @@
 #Alternative entrypoint for the container #This one must be used interactively with "-ti" parameters HELP="Possible arguments :
 #	--help (-h)
 #	--useruid (-g)   : the uid of the user which is using the development environment
-#    --username (-u)  : the name of the user which is using the development environment"
+#   --username (-u)  : the name of the user which is using the development environment"
 
 while [[ $# > 0 ]]
 do
@@ -33,9 +33,33 @@ done
 if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
 	cd /opt/artifacts
 	useradd -u $userUid $userName
-	sudo -u $userName /tmp/update_bashrc.sh
-	sudo -u $userName /bin/bash
 else
-	echo "No user UID provided, cannot securely user the development environment"
-	exit 1
+   echo ">> No user provided as parameters for the script, using the default maf (uid = 1000) user instead (WARNING the resulting packages might not be accessible from the host)"
+   userName="maf"
+   userUid=1000
+   useradd -u $userUid $userName
 fi
+
+#Change the owner of the content of the workspace
+chown -R $userName.$userName /opt/artifacts
+
+#Copy the build scripts and default configuration files
+cp /opt/prepare/build.sh /opt/artifacts/build.sh
+cp /opt/prepare/db.sh /opt/artifacts/db.sh
+chown $userName.$userName /opt/artifacts/build.sh
+chown $userName.$userName /opt/artifacts/db.sh
+
+#create the bizdock folders (various folders required for the service to be executed correctly)
+if [ ! -d /opt/artifacts/maf-file-system ]; then
+  mkdir -p /opt/artifacts/maf-file-system
+  chown -R $userName.$userName /opt/artifacts/maf-file-system
+fi
+if [ ! -d /tmp/deadletters ]; then
+  mkdir -p /tmp/deadletters
+  mkdir -p /tmp/deadletters-reprocessing
+fi
+chown $userName.$userName /opt/prepare/create_maf_fs.sh
+/opt/prepare/create_maf_fs.sh $userName
+
+#Run a bash for interactive build
+sudo -u $userName /bin/bash

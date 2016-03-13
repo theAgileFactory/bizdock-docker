@@ -2,9 +2,6 @@
 
 #This script is to be used to install and use the BizDock development environment
 
-#Test if docker is installed and accessible
-#TODO
-
 HELP=$'Possible arguments :\n\t--help (-h)\n\t--configure (-c)\t: configure the development environment (launch the first time)\n\t--interactive (-i)\t: open in interactive mode\n\t--workspace (-w)\t: the host folder in which the source code must be set\n\t--port (-p)\t\t: the port to which bizdock will listen (default is 8080)\n\t--no-database (-d)\t: do not run a database container'
 
 bizDockPort=8080
@@ -73,8 +70,8 @@ else
 	if [ "$isInteractive" = true ] ; then
 		if [ "$noDatabase" = false ] ; then
 			echo ">> Starting a database container for bizdock"
-			docker run -d --net=bizdock --name=bizdock_db_dev -v  bizdock_database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root mariadb:10.1 || echo ">> Cannot start the database container (named "bizdock_db_dev"), this one is probably already running"
-			echo ">> WARNING: the database container (named "bizdock_db_dev") must be stopped manually"
+			docker run -d --net=bizdock --name=bizdockdb -v  bizdock_database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root mariadb:10.1 || echo ">> Cannot start the database container (named "bizdockdb"), this one is probably already running"
+			echo ">> WARNING: the database container (named "bizdockdb") must be stopped manually"
 		fi
 		echo ">> Container launched in interactive mode"
 		docker run --net=bizdock --rm --name=bizdockdev -ti -p $bizDockPort:9000 -v bizdock_sbtcache:/root/.sbt -v bizdock_ivyrepo:/root/.ivy2  -v bizdock_mvnrepo:/root/.m2 -v $workspace:/opt/artifacts --entrypoint=/opt/prepare/interactive.sh taf/dev-app --useruid $(id -u $(whoami)) --username $(whoami)
