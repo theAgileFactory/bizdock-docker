@@ -46,9 +46,9 @@ This script will run two containers : one for the database and one for the devel
 
 The script needs at least one argument which is ```-w```. Indeed, you need to give the path to an existing folder on your host where the container will store the git folders and the build scripts.
 
-The second argument needed is ```-i``` to run the container interactively (if this is your first usage, please read first the ```First usage``` section below.
+The second argument needed is ```-i``` to run the container interactively (if this is your first usage, please read first the ```First usage``` section below).
 
-Once your Docker container is launched and you have access to the shell, you can execute ```./build.sh``` to compile the whole application (it should take long to be done).
+Once your Docker container is launched and you have access to the shell, you can execute ```./build.sh``` to compile the whole application (it could take long to be done).
 
 When you do some modifications only in the ```Model``` for example, you can run ```build.sh``` with the flag ```-m``` to compile only what is necessary.
 You can find further options with the ```-h``` flag.
