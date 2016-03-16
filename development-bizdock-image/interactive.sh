@@ -31,7 +31,6 @@ done
 
 #Create a user with the right UID to allow access to the files from the host
 if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
-	cd /opt/artifacts
 	useradd -u $userUid $userName
 else
    echo ">> No user provided as parameters for the script, using the default maf (uid = 1000) user instead (WARNING the resulting packages might not be accessible from the host)"
@@ -67,6 +66,9 @@ if [ ! -d /tmp/deadletters ]; then
 fi
 chown $userName.$userName /opt/prepare/create_maf_fs.sh
 /opt/prepare/create_maf_fs.sh $userName
+
+#move where sources files are located
+cd /opt/artifacts
 
 #Run a bash for interactive build
 sudo -u $userName /bin/bash
