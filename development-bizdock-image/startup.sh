@@ -53,6 +53,8 @@ source /etc/bashrc
 cp /opt/prepare/bizdockdb-dbmdl-framework.properties /opt/artifacts/bizdockdb-dbmdl-framework.properties
 cp /opt/prepare/bizdockdb-maf-dbmdl.properties /opt/artifacts/bizdockdb-maf-dbmdl.properties
 cp /opt/prepare/bizdock-packaging.properties /opt/artifacts/bizdock-packaging.properties
+cp /opt/prepare/framework.conf /opt/artifacts/maf-desktop-app/conf/framework.conf
+cp /opt/prepare/environment.conf /opt/artifacts/maf-desktop-app/conf/environment.conf
 
 # ------------------------------
 # Pull the projects from github
