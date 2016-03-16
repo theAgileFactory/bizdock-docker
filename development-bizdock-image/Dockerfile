@@ -2,9 +2,12 @@ FROM centos:7
 
 #Volumes to store the artifacts once they are ready to be deployed
 VOLUME /opt/artifacts
-VOLUME /root/.m2
-VOLUME /root/.ivy2
-VOLUME /root/.sbt
+VOLUME /opt/cache/.m2
+VOLUME /opt/cache/.ivy2
+VOLUME /opt/cache/.sbt
+
+#Create to the cache folders for root (the same is required for the selected user)
+RUN mkdir -p /opt/cache/.m2;mkdir -p /opt/cache/.ivy2;chmod -R 777 /opt/cache;mkdir -p /opt/cache/.sbt;cd /root;ln -s /opt/cache/.m2 .m2;ln -s /opt/cache/.ivy2 .ivy2;ln -s /opt/cache/.sbt .sbt
 
 #Expose the port if activator is launched (in order to run the application)
 EXPOSE 9000
@@ -47,14 +50,13 @@ ADD interactive.sh /opt/prepare/interactive.sh
 ADD build.sh /opt/prepare/build.sh
 #Utility for managing the database
 ADD db.sh /opt/prepare/db.sh
-#Configuration for the database
+#Utility to create the bizdock file system
+ADD create_maf_fs.sh /opt/prepare/create_maf_fs.sh
+
+#Configuration for building the various components
 ADD bizdockdb-dbmdl-framework.properties /opt/prepare/bizdockdb-dbmdl-framework.properties
 ADD bizdockdb-maf-dbmdl.properties /opt/prepare/bizdockdb-maf-dbmdl.properties
-ADD configuration_files/application.conf /opt/prepare/configuration_files/application.conf
-ADD configuration_files/application-logger.xml /opt/prepare/configuration_files/application-logger.xml
-ADD configuration_files/environment.conf /opt/prepare/configuration_files/environment.conf
-ADD configuration_files/framework.conf /opt/prepare/configuration_files/framework.conf
-ADD create_maf_fs.sh /opt/prepare/create_maf_fs.sh
+ADD bizdock-packaging.properties /opt/prepare/bizdock-packaging.properties
 
 RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/create_maf_fs.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh;chmod u+x /opt/prepare/db.sh
 

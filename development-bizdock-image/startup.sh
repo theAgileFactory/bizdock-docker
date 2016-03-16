@@ -34,44 +34,30 @@ done
 #Create a user with the right UID to allow access to the files from the host
 if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
   useradd -u $userUid $userName
-  #Copy the build script
-  cp /opt/prepare/build.sh /opt/artifacts/build.sh
-  cp /opt/prepare/db.sh /opt/artifacts/db.sh
-  cp /opt/prepare/bizdockdb-dbmdl-framework.properties /opt/artifacts/bizdockdb-dbmdl-framework.properties
-  cp /opt/prepare/bizdockdb-maf-dbmdl.properties /opt/artifacts/bizdockdb-maf-dbmdl.properties
-  mkdir -p /opt/artifacts/configuration_files
-  if [ -z "$(ls /opt/artifacts/configuration_files)" ]; then
-    cp /opt/prepare/configuration_files/* /opt/artifacts/configuration_files/ 
-  fi
-
-  if [ ! -d /opt/artifacts/maf-file-system ]; then
-    mkdir -p /opt/artifacts/maf-file-system
-  fi
-
-  if [ ! -d /tmp/deadletters ]; then
-    mkdir -p /tmp/deadletters
-    mkdir -p /tmp/deadletters-reprocessing
-  fi
-
-  #Change the owner
-  chown $userName.$userName /opt/artifacts/build.sh
-  chown $userName.$userName /opt/artifacts/db.sh
-  chown $userName.$userName /opt/artifacts/bizdockdb-dbmdl-framework.properties
-  chown $userName.$userName /opt/artifacts/bizdockdb-maf-dbmdl.properties
-  chown $userName.$userName /opt/artifacts/maf-file-system
-  chown -R $userName.$userName /opt/artifacts/configuration_files
-  chown -R $userName.$userName /opt/artifacts/maf-file-system
-  chown $userName.$userName /opt/prepare/create_maf_fs.sh
-
-
 else
-  echo "No user UID provided, cannot securely create the development environment"
-  exit 1
+   echo ">> No user provided as parameters for the script, using the default maf (uid = 1000) user instead (WARNING the resulting packages might not be accessible from the host)"
+   userName="maf"
+   userUid=1000
+   useradd -u $userUid $userName
 fi
+cd /home/$userName
+ln -s /opt/cache/.m2 .m2
+ln -s /opt/cache/.ivy2 .ivy2
+ln -s /opt/cache/.sbt .sbt
+chown $userName.$userName .m2 .ivy2 .sbt
 
-#Change to the current user for enabling the appropriate permissions
-exec sudo -u $userName /bin/sh - << eof
-#Pull the projects from github
+
+source /etc/bashrc
+
+#Copy the default configuration files
+cp /opt/prepare/bizdockdb-dbmdl-framework.properties /opt/artifacts/bizdockdb-dbmdl-framework.properties
+cp /opt/prepare/bizdockdb-maf-dbmdl.properties /opt/artifacts/bizdockdb-maf-dbmdl.properties
+cp /opt/prepare/bizdock-packaging.properties /opt/artifacts/bizdock-packaging.properties
+
+# ------------------------------
+# Pull the projects from github
+# ------------------------------
+
 #framework
 if [ ! -d "/opt/artifacts/app-framework" ]; then
   echo ">> Initializing app-framework"
@@ -97,6 +83,15 @@ if [ ! -d "/opt/artifacts/maf-desktop-app" ]; then
   cd /opt/artifacts/maf-desktop-app
   git init
   git pull https://github.com/theAgileFactory/maf-desktop-app.git
+fi
+
+#bizdock packaging
+if [ ! -d "/opt/artifacts/bizdock-packaging" ]; then
+  echo ">> Initializing bizdock-packaging"
+  mkdir /opt/artifacts/bizdock-packaging
+  cd /opt/artifacts/bizdock-packaging
+  git init
+  git pull https://github.com/theAgileFactory/bizdock-packaging.git
 fi
 
 #dbmdl for the framework
@@ -126,20 +121,80 @@ if [ ! -d "/opt/artifacts/replacer" ]; then
   git pull https://github.com/theAgileFactory/replacer.git
 fi
 
-if [ -e /opt/artifacts/configuration_files/application.conf ]; then
-  cp /opt/artifacts/configuration_files/application.conf /opt/artifacts/maf-desktop-app/conf/
-fi
-if [ -e /opt/artifacts/configuration_files/application-logger.xml ]; then
-  cp /opt/artifacts/configuration_files/application-logger.xml /opt/artifacts/maf-desktop-app/conf/
-fi
-if [ -e /opt/artifacts/configuration_files/environment.conf ]; then
-  cp /opt/artifacts/configuration_files/environment.conf /opt/artifacts/maf-desktop-app/conf/
-fi
-if [ -e /opt/artifacts/configuration_files/framework.conf ]; then
-  cp /opt/artifacts/configuration_files/framework.conf /opt/artifacts/maf-desktop-app/conf/
+# ------------------------------
+# Build the projects
+# ------------------------------
+
+rm -rf /opt/artifacts/deploy
+mkdir /opt/artifacts/deploy
+
+echo ">> Building the replacer"
+mvn -f /opt/artifacts/replacer/pom.xml clean install
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit 1
 fi
 
-/opt/prepare/create_maf_fs.sh $userName
+echo ">> Building dbmdl-framework"
+mvn -f /opt/artifacts/dbmdl-framework/pom.xml clean install
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit 1
+fi
+cd /opt/artifacts/dbmdl-framework/target
+versionNumber=$(ls dbmdl-framework-*-properties.zip | grep -oP '(?<=dbmdl-framework-).*(?=-properties.zip)')
+echo ">> Found version number for dbmdl-framework $versionNumber"
+mvn com.agifac.deploy:replacer-maven-plugin:replace -Dsource=dbmdl-framework-$versionNumber.zip -Denv=/opt/artifacts/bizdockdb-dbmdl-framework.properties
+mv /opt/artifacts/dbmdl-framework/target/$(ls merged-dbmdl-framework-*.zip) /opt/artifacts/deploy
+  
+echo ">> Building maf-dbmdl"
+mvn -f /opt/artifacts/maf-dbmdl/pom.xml clean install
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+	exit 1
+fi
+cd /opt/artifacts/maf-dbmdl/target
+versionNumber=$(ls maf-dbmdl-*-properties.zip | grep -oP '(?<=maf-dbmdl-).*(?=-properties.zip)')
+echo ">> Found version number for maf-dbmdl $versionNumber"
+mvn com.agifac.deploy:replacer-maven-plugin:replace -Dsource=maf-dbmdl-$versionNumber.zip -Denv=/opt/artifacts/bizdockdb-maf-dbmdl.properties
+mv /opt/artifacts/maf-dbmdl/target/$(ls merged-maf-dbmdl-*.zip) /opt/artifacts/deploy
+
+echo ">> Building app-framework"
+mvn -f /opt/artifacts/app-framework/pom.xml clean install
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit 1
+fi
+
+echo ">> Building maf-desktop-datamodel"
+mvn -f /opt/artifacts/maf-desktop-datamodel/pom.xml clean install
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit 1
+fi
+
+echo ">> Building maf-desktop-app"
+mvn -f /opt/artifacts/maf-desktop-app/pom.xml clean install
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit 1
+fi
+
+echo ">> Building bizdock packaging"
+mvn -f /opt/artifacts/bizdock-packaging/pom.xml clean install
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit 1
+fi
+cd /opt/artifacts/bizdock-packaging/target
+versionNumber=$(ls maf-desktop-*-properties.zip | grep -oP '(?<=maf-desktop-).*(?=-properties.zip)')
+echo ">> Found version number for bizdock-packaging $versionNumber"
+mvn com.agifac.deploy:replacer-maven-plugin:replace -Dsource=maf-desktop-$versionNumber.zip -Denv=/opt/artifacts/bizdock-packaging.properties
+mv /opt/artifacts/bizdock-packaging/target/$(ls merged-maf-desktop-*.zip) /opt/artifacts/deploy
+
+#Change the owner of the artifacts folder
+chown -R $userName.$userName /opt/artifacts
+#Change the owner of the build cache folder
+chmod -R 777 /opt/cache
 
 echo ">> The environment is now ready to be used interactively"
-eof

@@ -29,7 +29,7 @@ To create the Docker image, you need to be in the [deployment-bizdock-image](htt
 
 For building BizDock, you need to put into ```bizdock``` folder the packaged ZIP files (```merged-*.zip```) that you can find in the target folders of ```maf-desktop```, ```maf-dbmdl``` and ```dbmdl-framework```.
 
-*For the moment, the maf-desktop is not publicly available, so you cannot use this Docker container !*
+*To get these packages you need to use the development image to launch a "builder" container*
 
 ## Get the Docker image (NOT AVAILABLE FOR THE MOMENT)
 

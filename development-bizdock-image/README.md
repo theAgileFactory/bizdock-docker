@@ -5,11 +5,12 @@ Build and run a Docker image to have a development environment of BizDock.
 ## Structure of the repository
 
 * ```use```
-    * ```bizdockctl.sh``` : main script to run a docker image
-* ```bizdockdb-dbmdl-framework.properties``` : properties of the dbmdl framework
-* ```bizdockdb-maf-dbmdl.properties``` : properties of the maf dbmdl
-* ```build.sh``` : script to build the application from the Docker image
-* ```db.sh``` : script to update (and initialize) the database from the Docker image
+    * ```bizdockctl.sh``` : a command line script (is not inserted into the image) to control the creation of the docker containers
+* ```bizdockdb-dbmdl-framework.properties``` : default properties of the dbmdl framework
+* ```bizdockdb-maf-dbmdl.properties``` : default properties of the maf dbmdl
+* ```bizdock-packaging.properties``` : default properties of the bizdock packaging component
+* ```build.sh``` : script to build the application inside the docker image (interactive mode)
+* ```db.sh``` : script to update (and initialize) the database (interactive mode)
 * ```Dockerfile``` : file to build the Docker image
 * ```install_maven.sh``` : script used to install maven into the container
 * ```install_play.sh``` : script to install the [Java Play Framework](https://www.playframework.com/) into the container
@@ -34,7 +35,7 @@ docker build -t taf/dev-app .
 
 If you don't want to create your own image, you can get it running the command ```docker pull taf/dev-app```.
 
-## Run the Docker container
+## Run the Docker containers
 
 To run your container, you need to use the ```use/bizdockctl.sh``` script.
 For informations about this script, you can use the ```-h``` flag.
@@ -58,12 +59,12 @@ When everything is built, you simply need to go into ```maf-desktop-app``` direc
 
 Bizdock will be available on ```localhost:8080``` by default (use ```-p``` when launching ```bizdockctl.sh``` to use another port).
 
+Then, you can import the folders into an IDE like [eclipse](https://www.eclipse.org/) to develop on your host.
+By default the projects built using ```buid.sh``` are eclispe compatible.
+
 #### First usage
 
-The first time you run the script, you need to pass the ```-c```argument to clone the git repositories into your workspace (path given to ```-w``` option).
-If you modify the properties files, you need to launch once ```use/bizdockctl.sh -c```.
-It will ensure the properties are located at the right place in the folders.
+The first time you run the script, you need to pass the ```-c```argument to clone the git repositories into your workspace (path given to ```-w``` option) and to perform a complete build.
 
-Then, you can import the folders into an IDE like [eclipse](https://www.eclipse.org/) to develop on your host.
-
-For the database, the first time you launch ```db.sh```, you must use the flag ```-r``` to reset and initialize de database.
+WARNING: this may be quite long depending on the speed of your internet connection.
+Be patient !
