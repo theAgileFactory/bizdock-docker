@@ -164,15 +164,22 @@ if [ "$DISTANT_DB" = "false" ]; then
       -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
       taf/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
 
-      # TODO : use docker compose to manage deployment
-      #wait 5 seconds to give time to DB to start correctly before bizdock
-      sleep 5
+    # TODO : use docker compose to manage deployment
+    #wait 5 seconds to give time to DB to start correctly before bizdock
+    sleep 5
 
-      #test if db container is up
-      if [ -z "$(docker ps | grep bizdock_db$)" ]; then
-        echo "/!\\ Database container is not up. BizDock will not start /!\\"
-        exit 1
-      fi
+    IS_TABLE=$(docker exec -it bizdock_db mysql -h localhost -P 3306 -u "$DB_USER" -p"$DB_USER_PASSWD" -D "$DB_NAME" -e 'show tables;')
+    if [ -z "$IS_TABLE" ]; then
+      CONFIGURE_DB=true
+    fi
+
+    #test if db container is up
+    if [ -z "$(docker ps | grep bizdock_db$)" ]; then
+      echo "/!\\ Database container is not up. BizDock will not start /!\\"
+      exit 1
+    fi
+  else
+    echo ">> The database container is already running. If this is not the case, please remove it with the command 'docker rm bizdock_db'"
   fi
 else
   echo "/!\\ Connection to a distant DB through properties files /!\\"
@@ -183,21 +190,21 @@ echo "---- RUNNING BIZDOCK ----"
 INSTANCE_TEST=$(docker ps -a | grep -e "bizdock$")
 if [ $? -eq 1 ]; then
   docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
-   -v /var/opt \
-   -v /opt/mysqldump \
-   $CONFIG_VOLUME \
-   $MAF_FS \
-   -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-   taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
+    -v /var/opt \
+    -v /opt/mysqldump \
+    $CONFIG_VOLUME \
+    $MAF_FS \
+    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
+    taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 else
   docker stop bizdock
   docker rm bizdock
   docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
-   -v /var/opt \
-   -v /opt/mysqldump \
-   $CONFIG_VOLUME \
-   $MAF_FS \
-   -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-   taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
+    -v /var/opt \
+    -v /opt/mysqldump \
+    $CONFIG_VOLUME \
+    $MAF_FS \
+    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
+    taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 fi
 
