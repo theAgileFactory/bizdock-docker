@@ -57,8 +57,6 @@ ADD create_maf_fs.sh /opt/prepare/create_maf_fs.sh
 ADD bizdockdb-dbmdl-framework.properties /opt/prepare/bizdockdb-dbmdl-framework.properties
 ADD bizdockdb-maf-dbmdl.properties /opt/prepare/bizdockdb-maf-dbmdl.properties
 ADD bizdock-packaging.properties /opt/prepare/bizdock-packaging.properties
-ADD framework.conf /opt/prepare/framework.conf
-ADD environment.conf /opt/prepare/environment.conf
 
 RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/create_maf_fs.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh;chmod u+x /opt/prepare/db.sh
 
