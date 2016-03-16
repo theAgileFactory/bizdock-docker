@@ -10,8 +10,8 @@ DB_USER=
 DB_USER_PASSWD=
 DB_HOST=""
 CONFIG_VOLUME=
-BIZDOCK_PORT=9999
-BIZDOCK_PORT_DEFAULT=9999
+BIZDOCK_PORT=8080
+BIZDOCK_PORT_DEFAULT=8080
 DISTANT_DB=false
 CONFIGURE_DB=false
 
@@ -149,13 +149,17 @@ fi
 if [ "$DISTANT_DB" = "false" ]; then
   docker volume create --name=bizdock_database
 
-  INSTANCE_TEST=$(docker ps -a | grep -e "bizdock_db$")
+  INSTANCE_TEST=$(docker ps | grep -e "bizdockdb$")
   if [ $? -eq 1 ]; then
+    INSTANCE_TEST=$(docker ps -a | grep -e "bizdockdb")
+    if [ $? -eq 0 ]; then
+      docker rm bizdockdb
+    fi
     echo "---- RUNNING DATABASE CONTAINER ----"
     echo ">> By default, the database dump is done every day at 2 am."
     echo ">> To change that, please create a 'startup.sh' script in $DB_BACKUP that adds a crontab file"
     echo ">>You can start from the default file in $DB_BACKUP"
-    docker run --name=bizdock_db -d --net=bizdock_network $DB_HOST \
+    docker run --name=bizdockdb -d --net=bizdock_network $DB_HOST \
       -v bizdock_database:/var/lib/mysql/ \
       -v $DB_BACKUP:/var/opt/backups/ \
       -e MYSQL_ROOT_PASSWORD=root \
@@ -164,23 +168,24 @@ if [ "$DISTANT_DB" = "false" ]; then
       -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
       taf/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
 
-    # TODO : use docker compose to manage deployment
-    #wait 5 seconds to give time to DB to start correctly before bizdock
-    sleep 5
-
-    IS_TABLE=$(docker exec -it bizdock_db mysql -h localhost -P 3306 -u "$DB_USER" -p"$DB_USER_PASSWD" -D "$DB_NAME" -e 'show tables;')
-    if [ -z "$IS_TABLE" ]; then
-      CONFIGURE_DB=true
-    fi
+    #wait 10 seconds to give time to DB to start correctly before bizdock
+    echo ">> Wait 10 seconds to give time to database container to initialize"
+    sleep 10
 
     #test if db container is up
-    if [ -z "$(docker ps | grep bizdock_db$)" ]; then
+    if [ -z "$(docker ps | grep bizdockdb$)" ]; then
       echo "/!\\ Database container is not up. BizDock will not start /!\\"
       exit 1
     fi
   else
-    echo ">> The database container is already running. If this is not the case, please remove it with the command 'docker rm bizdock_db'"
+    echo ">> The database container is already running. If this is not the case, please remove it with the command 'docker rm bizdockdb'"
   fi
+
+  IS_TABLE=$(docker exec -it bizdockdb mysql -h localhost -P 3306 -u "$DB_USER" -p"$DB_USER_PASSWD" -D "$DB_NAME" -e 'show tables;')
+  if [ -z "$IS_TABLE" ]; then
+    CONFIGURE_DB=true
+  fi
+
 else
   echo "/!\\ Connection to a distant DB through properties files /!\\"
 fi

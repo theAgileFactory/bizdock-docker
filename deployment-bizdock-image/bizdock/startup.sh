@@ -36,7 +36,10 @@ done
 
 #Create a user with the right UID to allow access to the files from the host
 if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
-  useradd -u $userUid $userName
+  user=$(id -u $userName > /dev/null 2>&1; echo $?)
+  if [ $? -eq 0 ]; then
+    useradd -u $userUid $userName
+  fi
 
   /opt/scripts/update_bashrc.sh
 
@@ -55,13 +58,13 @@ if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
     cp /opt/start-config/maf-desktop/*.conf /opt/maf/maf-desktop/conf && cp /opt/start-config/maf-desktop/*.xml /opt/maf/maf-desktop/conf
   fi
   if [ "$CONFIGURE_DB_INIT" = true ]; then
-    echo ">> Reseting the database schema"
-    mysql -h bizdock_db -u root --password=root <<EOF
-    DROP SCHEMA IF EXISTS maf;
-    CREATE SCHEMA IF NOT EXISTS maf 
-    DEFAULT CHARACTER SET utf8;
-    CREATE USER IF NOT EXISTS 'maf'@'%' IDENTIFIED BY 'maf';
-    GRANT ALL ON maf.* TO 'maf'@'%';
+echo ">> Reseting the database schema"
+mysql -h bizdockdb -u root --password=root <<EOF
+DROP SCHEMA IF EXISTS maf;
+CREATE SCHEMA IF NOT EXISTS maf 
+DEFAULT CHARACTER SET utf8;
+CREATE USER IF NOT EXISTS 'maf'@'%' IDENTIFIED BY 'maf';
+GRANT ALL ON maf.* TO 'maf'@'%';
 EOF
   fi
 
@@ -78,43 +81,52 @@ EOF
   fi
 
   if [ "$CONFIGURE_DB_INIT" = true ]; then
-    mysql -h bizdock_db -u root --password=root maf < /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/sql/init_base.sql
+    mysql -h bizdockdb -u root --password=root maf < /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/sql/init_base.sql
   fi
 
   N=$(echo $(cat /opt/start-config/maf-desktop/framework.conf | grep saml.sso.config | cut -d '=' -f 2 | cut -d '"' -f 2 | grep -o "/" | wc -l)+1 | bc)
   SSO_FILE=$(cat /opt/start-config/maf-desktop/framework.conf | grep saml.sso.config | cut -d '=' -f 2 | cut -d '"' -f 2 | cut -d '/' -f $N)
-  if [ ! -d /opt/maf-file-system/$SSO_FILE ]; then
-    touch /opt/maf-file-system/$SSO_FILE
+  if [ ! -d /opt/artifacts/maf-file-system/$SSO_FILE ]; then
+    touch /opt/artifacts/maf-file-system/$SSO_FILE
   fi
 
   N=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.personal.space.root | cut -d '=' -f 2 | cut -d '"' -f 2 | grep -o "/" | wc -l)
   PERSONAL_SPACE_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.personal.space.root | cut -d '=' -f 2 | cut -d '"' -f 2 | cut -d '/' -f $N)
-  if [ ! -d /opt/maf-file-system/$PERSONAL_SPACE_FOLDER ]; then
-    mkdir -p /opt/maf-file-system/$PERSONAL_SPACE_FOLDER
+  if [ ! -d /opt/artifacts/maf-file-system/$PERSONAL_SPACE_FOLDER ]; then
+    mkdir -p /opt/artifacts/maf-file-system/$PERSONAL_SPACE_FOLDER
   fi
 
   N=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.report.custom.root | cut -d '=' -f 2 | cut -d '"' -f 2 | grep -o "/" | wc -l)
   FTP_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.report.custom.root | cut -d '=' -f 2 | cut -d '"' -f 2 | cut -d '/' -f $N)
-  if [ ! -d /opt/maf-file-system/$FTP_FOLDER ]; then
-    mkdir -p /opt/maf-file-system/$FTP_FOLDER
+  if [ ! -d /opt/artifacts/maf-file-system/$FTP_FOLDER ]; then
+    mkdir -p /opt/artifacts/maf-file-system/$FTP_FOLDER
   fi
 
   N=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.attachments.root | cut -d '=' -f 2 | cut -d '"' -f 2 | grep -o "/" | wc -l)
   ATTACHMENTS_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.attachments.root | cut -d '=' -f 2 | cut -d '"' -f 2 | cut -d '/' -f $N)
-  if [ ! -d /opt/maf-file-system//opt/artifacts/maf-file-system/$ATTACHMENTS_FOLDER ]; then
-    mkdir -p /opt/maf-file-system/$ATTACHMENTS_FOLDER
+  if [ ! -d /opt/artifacts/maf-file-system//opt/artifacts/maf-file-system/$ATTACHMENTS_FOLDER ]; then
+    mkdir -p /opt/artifacts/maf-file-system/$ATTACHMENTS_FOLDER
   fi
 
   N=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.ext.directory | cut -d '=' -f 2 | cut -d '"' -f 2 | grep -o "/" | wc -l)
   EXTENSIONS_FOLDER=$(cat /opt/start-config/maf-desktop/framework.conf | grep maf.ext.directory | cut -d '=' -f 2 | cut -d '"' -f 2 | cut -d '/' -f $N)
-  if [ ! -d /opt/maf-file-system/$EXTENSIONS_FOLDER ]; then
-    mkdir -p /opt/maf-file-system/$EXTENSIONS_FOLDER
+  if [ ! -d /opt/artifacts/maf-file-system/$EXTENSIONS_FOLDER ]; then
+    mkdir -p /opt/artifacts/maf-file-system/$EXTENSIONS_FOLDER
+  fi
+
+  if [ ! -d /opt/artifacts/maf-file-system/outputs ]; then
+    mkdir -p /opt/artifacts/maf-file-system/outputs
+  fi
+
+  if [ ! -d /opt/artifacts/maf-file-system/inputs ]; then
+    mkdir -p /opt/artifacts/maf-file-system/inputs
   fi
 
   chown -R $userName.$userName /opt/maf-file-system/
 
   echo "---- LAUNCHING BIZDOCK APPLICATION ----"
-  /opt/maf/maf-desktop/server/maf-desktop-app-dist/bin/maf-desktop-app -Dcom.agifac.appid=maf-desktop-docker -Dconfig.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application.conf -Dlogger.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist//conf/application-logger.xml -Dhttp.port=9999 -DapplyEvolutions.default=false
+  /opt/maf/maf-desktop/server/maf-desktop-app-dist/bin/maf-desktop-app -Dcom.agifac.appid=maf-desktop-docker -Dconfig.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application.conf -Dlogger.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application-logger.xml -Dhttp.port=8080 -DapplyEvolutions.default=false
 else
   echo "You should use a valid user"
 fi
+

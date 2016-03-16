@@ -4,7 +4,7 @@ MAINTAINER Marc Schaer <marc.schar@the-agile-factory.com>
 
 #Create volumes
 VOLUME /opt/start-config/
-VOLUME /opt/maf-file-system/
+VOLUME /opt/artifacts/maf-file-system/
 
 #epel-repo
 RUN yum update -y && yum install -y --setopt=tsflags=nodocs epel-release && yum clean all
