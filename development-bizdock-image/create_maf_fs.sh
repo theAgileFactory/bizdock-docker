@@ -42,3 +42,14 @@ if [ ! -d /opt/artifacts/maf-file-system/$EXTENSIONS_FOLDER ]; then
   chown $1.$1 /opt/artifacts/maf-file-system/$EXTENSIONS_FOLDER
 fi
 
+OUTPUTS="/opt/artifacts/maf-file-system/outputs"
+if [ ! -d "$OUTPUTS" ]; then
+  mkdir -p $OUTPUTS
+  chown $1.$1 $OUTPUTS
+fi
+
+INPUTS="/opt/artifacts/maf-file-system/inputs"
+if [ ! -d "$INPUTS" ]; then
+  mkdir -p $INPUTS
+  chown $1.$1 $INPUTS
+fi
