@@ -41,6 +41,7 @@ To run your container, you need to use the ```use/bizdockctl.sh``` script.
 For informations about this script, you can use the ```-h``` flag.
 
 This script will run two containers : one for the database and one for the development and building environment.
+To ensure to have working containers, you need to stop and remove a possible running ```bizdockdb``` container.
 
 ### Usage
 
@@ -48,14 +49,13 @@ The script needs at least one argument which is ```-w```. Indeed, you need to gi
 
 The second argument needed is ```-i``` to run the container interactively (if this is your first usage, please read first the ```First usage``` section below).
 
-Once your Docker container is launched and you have access to the shell, you can execute ```./build.sh``` to compile the whole application (it could take long to be done).
-
-When you do some modifications only in the ```Model``` for example, you can run ```build.sh``` with the flag ```-m``` to compile only what is necessary.
+Once your Docker container is launched and you have access to the shell, you can execute ```./opt/artifacts/build.sh``` to compile the whole application (it could take long to be done).
+When you do some modifications only in the ```Model``` ([maf-desktop-datamodel](https://github.com/theAgileFactory/maf-desktop-datamodel)) for example, you can run ```/opt/artifacts/build.sh``` with the flag ```-m``` to compile only what is necessary.
 You can find further options with the ```-h``` flag.
 
-Once it is finished, you can run the ```db.sh``` script to update your database. If you want to reset your database, you can use the ```-r``` argument.
+Once it is finished, you can run the ```/opt/artifacts/db.sh``` script to update your database. If you want to reset your database, you can use the ```-r``` argument.
 
-When everything is built, you simply need to go into ```maf-desktop-app``` directory and run ```activator``` to launch the [Java Play Framework](https://www.playframework.com/). When it is launched, you simply need to execute ```run 9000``` to run BizDock. 
+When everything is built, you simply need to go into ```/opt/artifacts/maf-desktop-app``` directory and run ```activator``` to launch the [Java Play Framework](https://www.playframework.com/). When it is launched, you simply need to execute ```run 9000``` to run BizDock. 
 
 Bizdock will be available on ```localhost:8080``` by default (use ```-p``` when launching ```bizdockctl.sh``` to use another port).
 
@@ -64,7 +64,20 @@ By default the projects built using ```buid.sh``` are eclispe compatible.
 
 #### First usage
 
+##### BizDock initialization
+
 The first time you run the script, you need to pass the ```-c```argument to clone the git repositories into your workspace (path given to ```-w``` option) and to perform a complete build.
 
 WARNING: this may be quite long depending on the speed of your internet connection.
 Be patient !
+
+##### Database initialization
+
+To have a working instance of BizDock, you need to reset once your database (```/opt/artifacts/db.sh -r``` in the container).
+
+## Using BizDock
+
+When you are on the login page of BizDock, you can log in with two default admin accounts:
+
+    * User: ```admin``` , password: ```admin123```
+    * User: ```admin_taf``` , password: ```admin123```
