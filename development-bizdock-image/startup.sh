@@ -8,9 +8,9 @@ HELP="Possible arguments :
 --useruid (-g)   : the uid of the user which is using the development environment
 --username (-u)  : the name of the user which is using the development environment"
 while [[ $# > 0 ]]
-do
-  key="$1"
-  case $key in
+do 
+  key="$1" 
+  case $key in 
     -h|--help)
       echo $HELP
       exit 0
@@ -50,11 +50,21 @@ chown $userName.$userName .m2 .ivy2 .sbt
 source /etc/bashrc
 
 #Copy the default configuration files
-cp /opt/prepare/bizdockdb-dbmdl-framework.properties /opt/artifacts/bizdockdb-dbmdl-framework.properties
-cp /opt/prepare/bizdockdb-maf-dbmdl.properties /opt/artifacts/bizdockdb-maf-dbmdl.properties
-cp /opt/prepare/bizdock-packaging.properties /opt/artifacts/bizdock-packaging.properties
-cp /opt/prepare/framework.conf /opt/artifacts/maf-desktop-app/conf/framework.conf
-cp /opt/prepare/environment.conf /opt/artifacts/maf-desktop-app/conf/environment.conf
+if [ ! -e /opt/artifacts/bizdockdb-dbmdl-framework.properties ]; then 
+  cp /opt/prepare/bizdockdb-dbmdl-framework.properties /opt/artifacts/bizdockdb-dbmdl-framework.properties
+fi
+if [ ! -e /opt/artifacts/bizdockdb-maf-dbmdl.properties ]; then 
+  cp /opt/prepare/bizdockdb-maf-dbmdl.properties /opt/artifacts/bizdockdb-maf-dbmdl.properties
+fi
+if [ ! -e /opt/artifacts/bizdock-packaging.properties ]; then 
+  cp /opt/prepare/bizdock-packaging.properties /opt/artifacts/bizdock-packaging.properties
+fi
+if [ ! -e /opt/artifacts/framework.conf ]; then 
+  cp /opt/prepare/framework.conf /opt/artifacts/framework.conf
+fi
+if [ ! -e /opt/artifacts/environment.conf ]; then 
+  cp /opt/prepare/environment.conf /opt/artifacts/environment.conf
+fi
 
 # ------------------------------
 # Pull the projects from github
