@@ -77,6 +77,9 @@ if [ ! -d "/opt/artifacts/app-framework" ]; then
   cd /opt/artifacts/app-framework
   git init
   git pull https://github.com/theAgileFactory/app-framework.git
+else
+  cd /opt/artifacts/app-framework
+  git pull https://github.com/theAgileFactory/app-framework.git
 fi
 
 #data model
@@ -85,6 +88,9 @@ if [ ! -d "/opt/artifacts/maf-desktop-datamodel" ]; then
   mkdir /opt/artifacts/maf-desktop-datamodel
   cd /opt/artifacts/maf-desktop-datamodel
   git init
+  git pull https://github.com/theAgileFactory/maf-desktop-datamodel.git
+else
+  cd /opt/artifacts/maf-desktop-datamodel
   git pull https://github.com/theAgileFactory/maf-desktop-datamodel.git
 fi
 
@@ -95,6 +101,9 @@ if [ ! -d "/opt/artifacts/maf-desktop-app" ]; then
   cd /opt/artifacts/maf-desktop-app
   git init
   git pull https://github.com/theAgileFactory/maf-desktop-app.git
+else
+  cd /opt/artifacts/maf-desktop-app
+  git pull https://github.com/theAgileFactory/maf-desktop-app.git
 fi
 
 #bizdock packaging
@@ -103,6 +112,9 @@ if [ ! -d "/opt/artifacts/bizdock-packaging" ]; then
   mkdir /opt/artifacts/bizdock-packaging
   cd /opt/artifacts/bizdock-packaging
   git init
+  git pull https://github.com/theAgileFactory/bizdock-packaging.git
+else
+  cd /opt/artifacts/bizdock-packaging
   git pull https://github.com/theAgileFactory/bizdock-packaging.git
 fi
 
@@ -113,6 +125,9 @@ if [ ! -d "/opt/artifacts/dbmdl-framework" ]; then
   cd /opt/artifacts/dbmdl-framework
   git init
   git pull https://github.com/theAgileFactory/dbmdl-framework.git
+else
+  cd /opt/artifacts/dbmdl-framework
+  git pull https://github.com/theAgileFactory/dbmdl-framework.git
 fi
 
 #dbmdl for the desktop
@@ -122,6 +137,9 @@ if [ ! -d "/opt/artifacts/maf-dbmdl" ]; then
   cd /opt/artifacts/maf-dbmdl
   git init
   git pull https://github.com/theAgileFactory/maf-dbmdl.git
+else
+  cd /opt/artifacts/maf-dbmdl
+  git pull https://github.com/theAgileFactory/maf-dbmdl.git
 fi
 
 #replacer (used for properties management)
@@ -130,6 +148,9 @@ if [ ! -d "/opt/artifacts/replacer" ]; then
   mkdir /opt/artifacts/replacer
   cd /opt/artifacts/replacer
   git init
+  git pull https://github.com/theAgileFactory/replacer.git
+else
+  cd /opt/artifacts/replacer
   git pull https://github.com/theAgileFactory/replacer.git
 fi
 
