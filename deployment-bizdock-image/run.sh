@@ -147,7 +147,7 @@ fi
 
 #Run Bizdock Database
 if [ "$DISTANT_DB" = "false" ]; then
-  docker volume create --name=bizdock_database
+  docker volume create --name=bizdock_prod_database
 
   INSTANCE_TEST=$(docker ps | grep -e "bizdockdb$")
   if [ $? -eq 1 ]; then
@@ -160,7 +160,7 @@ if [ "$DISTANT_DB" = "false" ]; then
     echo ">> To change that, please create a 'startup.sh' script in $DB_BACKUP that adds a crontab file"
     echo ">>You can start from the default file in $DB_BACKUP"
     docker run --name=bizdockdb -d --net=bizdock_network $DB_HOST \
-      -v bizdock_database:/var/lib/mysql/ \
+      -v bizdock_prod_database:/var/lib/mysql/ \
       -v $DB_BACKUP:/var/opt/backups/ \
       -e MYSQL_ROOT_PASSWORD=root \
       -e MYSQL_DATABASE="$DB_NAME" \
