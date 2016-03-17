@@ -80,7 +80,7 @@ do
         echo ">> $MAF_FS does not exist. Please create it."
         exit 1
       fi
-      MAF_FS="-v $MAF_FS:/opt/maf-file-system/"
+      MAF_FS="-v $MAF_FS:/opt/artifacts/maf-file-system/"
       ;;
     c)
       CONFIG_VOLUME="$OPTARG"
