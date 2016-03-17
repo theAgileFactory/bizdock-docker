@@ -17,9 +17,9 @@ RUN mkdir -p /tmp/deadletters/ && mkdir -p /tmp/deadletters-reprocessing
 
 #Add compiled files
 ADD bizdock/*.zip /opt/maf/
-RUN unzip /opt/maf/merged-dbmdl-framework-11.0.1-SNAPSHOT.zip -d /opt/maf/dbmdl-framework && chmod u+x /opt/maf/dbmdl-framework/scripts/*
-RUN unzip /opt/maf/merged-maf-dbmdl-11.0.1-SNAPSHOT.zip -d /opt/maf/maf-dbmdl && chmod u+x /opt/maf/maf-dbmdl/scripts/*
-RUN unzip /opt/maf/merged-maf-desktop-11.1.1-SNAPSHOT.zip -d /opt/maf/maf-desktop
+RUN unzip /opt/maf/merged-dbmdl-framework-$(ls /opt/maf/merged-dbmdl-framework-*.zip | cut -d '-' -f 4-5 | cut -d '.' -f 1-3).zip -d /opt/maf/dbmdl-framework && chmod u+x /opt/maf/dbmdl-framework/scripts/*
+RUN unzip /opt/maf/merged-maf-dbmdl-$(ls /opt/maf/merged-maf-dbmdl-*.zip | cut -d '-' -f 4-5 | cut -d '.' -f 1-3).zip -d /opt/maf/maf-dbmdl && chmod u+x /opt/maf/maf-dbmdl/scripts/*
+RUN unzip /opt/maf/merged-maf-desktop-$(ls /opt/maf/merged-maf-desktop-*.zip | cut -d '-' -f 4-5 | cut -d '.' -f 1-3).zip -d /opt/maf/maf-desktop
 RUN unzip /opt/maf/maf-desktop/play-apps/maf-desktop-app-dist.zip -d /opt/maf/maf-desktop/server && chmod u+x /opt/maf/maf-desktop/server/maf-desktop-app-dist/bin/maf-desktop-app
 
 ADD bizdock/startup.sh bizdock/update_bashrc.sh /opt/scripts/
