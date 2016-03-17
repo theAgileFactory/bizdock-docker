@@ -8,7 +8,7 @@ Build and run Docker images to have a deployed BizDock application.
     * ```Dockerfile``` : file to build the Docker image of BizDock.
     * ```startup.sh``` : entrypoint of Docker image (manage configuration files, setup files in volumes and launch BizDock)
     * ```update_bashrc.sh``` : add Java path to ```bashrc```
-* bizdock_db
+* bizdockdb
     * ```Dockerfile``` : file to build the Docker image of the BizDock database
     * ```startup.sh``` : entrypoint of Docker image (setup files in volumes, start cron and start mysql)
 * ```build_images.sh``` : script to build Docker images
@@ -70,7 +70,7 @@ To define a personalized path on your host to store this cron job, the script to
 You need to run the container once to allow the container to copy the default files in this folder.
 
 By default, the dump is done every day at 2 AM.
-If you want to modify it, you simply need to modify the ```crontabFile``` on your host and restart the database container (```docker restart bizdock_db```).
+If you want to modify it, you simply need to modify the ```crontabFile``` on your host and restart the database container (```docker restart bizdockdb```).
 
 ## Configuration files
 
