@@ -52,6 +52,8 @@ chown -R $userName.$userName /opt/artifacts
 #Copy the build scripts and default configuration files
 cp /opt/prepare/build.sh /opt/artifacts/build.sh
 cp /opt/prepare/db.sh /opt/artifacts/db.sh
+cp /opt/artifacts/framework.conf /opt/artifacts/maf-desktop-app/conf/framework.conf
+cp /opt/artifacts/environment.conf /opt/artifacts/maf-desktop-app/conf/environment.conf
 chown $userName.$userName /opt/artifacts/build.sh
 chown $userName.$userName /opt/artifacts/db.sh
 
