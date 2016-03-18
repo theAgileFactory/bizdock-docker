@@ -58,14 +58,14 @@ You can find further options with the ```-h``` flag.
 
 Once it is finished, you can run the ```/opt/artifacts/db.sh``` script to update your database. If you want to reset your database, you can use the ```-r``` argument. Coupled with ```-i```, you can reset the database and add some test data.
 
-When everything is built, you simply need to go into ```/opt/artifacts/maf-desktop-app``` directory and run ```activator``` to launch the [Java Play Framework](https://www.playframework.com/). When it is launched, you simply need to execute ```run 9000``` to run BizDock. 
+When everything is built, you simply need to go into ```/opt/artifacts/maf-desktop-app``` directory and run ```activator``` to launch the [Java Play Framework](https://www.playframework.com/). When it is running, you simply need to execute ```run 9000``` to run BizDock. 
 
 Bizdock will be available on ```localhost:8080``` by default.
 To use another port, use the ```-p``` argument.
 Be careful to define in ```framework.conf``` the same port as given by ```-p``` argument for ```maf.public.url``` and ```swagger.api.basepath```.
 
 Then, you can import the folders into an IDE like [eclipse](https://www.eclipse.org/) to develop on your host.
-By default the projects built using ```buid.sh``` are eclispe compatible.
+By default the projects built using ```build.sh``` are eclispe compatible.
 
 #### First usage
 
@@ -107,4 +107,4 @@ The available users are :
 | test_bfim | admin123 |
 | test_mmark | admin123 |
 
-All these users have different rights in BizDock. With the admin account, you can search for users (Admin -> User administration) and observe the different permissions accorded to each user.
+All these users have different rights in BizDock. With the admin account, you can search for users (Admin -> User administration) and observe the different permissions given to each user.
