@@ -12,6 +12,8 @@ Build and run a Docker image to have a development environment of BizDock.
 * ```build.sh``` : script to build the application inside the docker image (interactive mode)
 * ```db.sh``` : script to update (and initialize) the database (interactive mode)
 * ```Dockerfile``` : file to build the Docker image
+* ```environment.conf``` : BizDock environment configuration file
+* ```framework.conf``` : BizDock framework configuration file
 * ```init_data.sql``` : SQL file to add test data into the database
 * ```install_maven.sh``` : script used to install maven into the container
 * ```install_play.sh``` : script to install the [Java Play Framework](https://www.playframework.com/) into the container
