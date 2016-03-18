@@ -27,31 +27,36 @@ To create the Docker image, you need to be in the [deployment-bizdock-image](htt
 ./build_images.sh
 ```
 
-For building BizDock, you need to put into ```bizdock``` folder the packaged ZIP files (```merged-*.zip```) that you can find in the target folders of ```maf-desktop```, ```maf-dbmdl``` and ```dbmdl-framework```.
+For building BizDock, you need to put into ```bizdock``` folder the packaged ZIP files (```merged-*.zip```). 
+To get these packages you need to use the development image to launch a "builder" container.
+You simply need to run the command ```use/bizdockctl.sh -w /a/workspace -c``` in the [development-bizdock-image](https://github.com/theAgileFactory/bizdock-docker/tree/master/development-bizdock-image) folder.
+This command will clone the git repositories and build the merged files.
+You will find them in ```/a/workspace/deploy/```.
 
-*To get these packages you need to use the development image to launch a "builder" container*
+Then, you will copy these files into [bizdock](https://github.com/theAgileFactory/bizdock-docker/tree/master/deployment-bizdock-image/bizdock) folder.
+
 
 ## Get the Docker image (NOT AVAILABLE FOR THE MOMENT)
 
-If you don't want to create your own image, you can get it running the command ```docker pull taf/bizdock_mariadb:10.1.12 && docker pull taf/bizdock:11.0.1```.
+If you don't want to create your own image, you can get it running the command ```docker pull taf/bizdock_mariadb:10.1.12 && docker pull taf/bizdock:12.0.1```.
 
 ## Run the Docker container
 
 To run your container, you need to use the ```run.sh``` script.
 For informations about this script, you can use the ```-h``` flag.
 
-This script will run two containers : one for the database and one for production environment.
+This script will run two containers : one for the database and one for the production environment.
 
 ### Usage
 
 You can give different arguments to the ```run.sh``` script :
 
-* ```-P``` : define the port on which you will access BizDock on your host
+* ```-P``` : define the port on which you will access BizDock on your host (be careful to modify the configuration files as explained in the [development folder](https://github.com/theAgileFactory/bizdock-docker/blob/master/development-bizdock-image/README.md)
 * ```-d``` : start a basic database container with default options (user: maf, password: maf)
 * ```-s``` : define the database schema (name of the database)
 * ```-u``` : define the user of the database (default: maf)
 * ```-p``` : define the password for the database user (default: maf)
-* ```-H``` : define the datase host and port (ex.: HOST:PORT) - In this case, no database container will be launched
+* ```-H``` : define the database host and port (ex.: HOST:PORT) - In this case, no database container will be launched
 * ```-c``` : define a mount point (on your host) where to store configuration files
 * ```-m``` : define a mount point (on your host) where the maf-file-system is stored
 * ```-i``` : reset and initialize the database
@@ -65,9 +70,6 @@ The first time you run the script, you need to pass the ```-i```argument to init
 
 [MariaDB](https://mariadb.org/) is the database used by BizDock.
 In addition of the official Docker image of MariaDB, we add to our image a cron job to make dumps of the database.
-
-To define a personalized path on your host to store this cron job, the script to process the ```mysqldump``` and the dumps of the database you need to use the flag ```-b```.
-You need to run the container once to allow the container to copy the default files in this folder.
 
 By default, the dump is done every day at 2 AM.
 If you want to modify it, you simply need to modify the ```crontabFile``` on your host and restart the database container (```docker restart bizdockdb```).

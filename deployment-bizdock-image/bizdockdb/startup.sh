@@ -3,7 +3,7 @@
 HELP="Possible arguments :
 	--help (-h)
 	--useruid (-g)   : the uid of the user which is using the development environment
-    --username (-u)  : the name of the user which is using the development environment"
+  --username (-u)  : the name of the user which is using the development environment"
 
 while [[ $# > 0 ]]
 do
@@ -34,20 +34,20 @@ if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
 	useradd -u $userUid $userName
 
   #create script for mysqldump
-  if [ ! -e /var/opt/backups/mysqldump_maf_db.sh ]; then
-    echo "export BACKUP_DIR=/var/opt/backups" > /var/opt/backups/mysqldump_maf_db.sh
-    echo "find \$BACKUP_DIR -name \"maf*\" -mtime +10 |xargs rm -rf" >> /var/opt/backups/mysqldump_maf_db.sh
-    echo "mysqldump -R -h localhost -u root -p$MYSQL_ROOT_PASSWORD maf | gzip > \$BACKUP_DIR/maf_\`date +%F\`.gz" >> /var/opt/backups/mysqldump_maf_db.sh
-    chmod +x /var/opt/backups/mysqldump_maf_db.sh
+  if [ ! -e /var/opt/db/cron/mysqldump_maf_db.sh ]; then
+    echo "export BACKUP_DIR=/var/opt/db/dumps/" > /var/opt/db/cron/mysqldump_maf_db.sh
+    echo "find \$BACKUP_DIR -name \"maf*\" -mtime +10 |xargs rm -rf" >> /var/opt/db/cron/mysqldump_maf_db.sh
+    echo "mysqldump -R -h localhost -u root -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE | gzip > \$BACKUP_DIR/maf_\`date +%F\`.gz" >> /var/opt/db/cron/mysqldump_maf_db.sh
+    chmod +x /var/opt/db/cron/mysqldump_maf_db.sh
   fi
 
   #crontab configuration
-  if [ ! -e /var/opt/backups/crontabFile ]; then
-    echo "#Backup maf DB" > /var/opt/backups/crontabFile
-    echo "0 2 * * * /var/opt/backups/mysqldump_maf_db.sh" >> /var/opt/backups/crontabFile
+  if [ ! -e /var/opt/db/cron/crontabFile ]; then
+    echo "#Backup maf DB" > /var/opt/db/cron/crontabFile
+    echo "0 2 * * * /var/opt/db/cron/mysqldump_maf_db.sh" >> /var/opt/db/cron/crontabFile
   fi
-  chown -R $userName.$userName /var/opt/backups/
-  crontab /var/opt/backups/crontabFile
+  chown -R $userName.$userName /var/opt/db/
+  crontab /var/opt/db/cron/crontabFile
 fi
 
 service cron start

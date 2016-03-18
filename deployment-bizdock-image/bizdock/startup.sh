@@ -8,7 +8,8 @@ set -e
 HELP="Possible arguments :
 --help (-h)
 --useruid (-g)   : the uid of the user which is using the development environment
---username (-u)  : the name of the user which is using the development environment"
+--username (-u)  : the name of the user which is using the development environment
+--port (-p)      : the BizDock port"
 
 while [[ $# > 0 ]]
 do
@@ -24,6 +25,10 @@ do
       ;;
     -g|--useruid)
       userUid=$2
+      shift
+      ;;
+    -p|--port)
+      BIZDOCK_PORT=$2
       shift
       ;;
     *)
@@ -58,6 +63,7 @@ if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
     cp /opt/start-config/maf-desktop/*.conf /opt/maf/maf-desktop/conf && cp /opt/start-config/maf-desktop/*.xml /opt/maf/maf-desktop/conf
   fi
   if [ "$CONFIGURE_DB_INIT" = true ]; then
+    #FIXME
 echo ">> Reseting the database schema"
 mysql -h bizdockdb -u root --password=root <<EOF
 DROP SCHEMA IF EXISTS maf;
@@ -125,7 +131,7 @@ EOF
   chown -R $userName.$userName /opt/artifacts/maf-file-system/
 
   echo "---- LAUNCHING BIZDOCK APPLICATION ----"
-  /opt/maf/maf-desktop/server/maf-desktop-app-dist/bin/maf-desktop-app -Dcom.agifac.appid=maf-desktop-docker -Dconfig.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application.conf -Dlogger.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application-logger.xml -Dhttp.port=8080 -DapplyEvolutions.default=false
+  /opt/maf/maf-desktop/server/maf-desktop-app-dist/bin/maf-desktop-app -Dcom.agifac.appid=maf-desktop-docker -Dconfig.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application.conf -Dlogger.file=/opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/application-logger.xml -Dhttp.port=$BIZDOCK_PORT -DapplyEvolutions.default=false
 else
   echo "You should use a valid user"
 fi

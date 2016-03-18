@@ -2,8 +2,8 @@ FROM mariadb:10.1
 
 MAINTAINER Marc Schaer <marc.schar@the-agile-factory.com>
 
-#Create  volumes for storing mysqldumps
-VOLUME /var/opt/backups/
+#Create volumes for storing cron jobs
+VOLUME /var/opt/db/cron/
 
 #Install crontabs for sqlbump jobs
 RUN apt-get update && apt-get install cron -y

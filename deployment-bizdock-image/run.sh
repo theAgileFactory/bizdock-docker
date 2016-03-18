@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HELP=$'Available options: \n\t-P - main Bizdock port\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-b - Path to store db backup\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-h - help\n\t-i - initialize database' 
+HELP=$'Available options: \n\t-P - main Bizdock port\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-b - Path to store db backup\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-b - optional mount of the db dump script\n\t-h - help\n\t-i - initialize database' 
 
 DB_NAME_DEFAULT='maf'
 DB_USER_DEFAULT='maf'
@@ -10,6 +10,7 @@ DB_USER=
 DB_USER_PASSWD=
 DB_HOST=""
 CONFIG_VOLUME=
+DB_SCRIPTS=
 BIZDOCK_PORT=8080
 BIZDOCK_PORT_DEFAULT=8080
 DISTANT_DB=false
@@ -39,11 +40,12 @@ do
       fi
       ;;
     b)
-      DB_BACKUP="$OPTARG"
-      if [ ! -d "$DB_BACKUP" ]; then
-        echo ">> $DB_BACKUP does not exist. Please create it."
+      DB_SCRIPTS="$OPTARG"
+      if [ ! -d "$DB_SCRIPTS" ]; then
+        echo ">> $DB_SCRIPTS does not exist. Please create it."
         exit 1
       fi
+      DB_SCRIPTS="${DB_SCRIPTS}:"
       ;;
     u)
       if [ -z "$DB_USER" ]; then
@@ -80,7 +82,6 @@ do
         echo ">> $MAF_FS does not exist. Please create it."
         exit 1
       fi
-      MAF_FS="-v $MAF_FS:/opt/artifacts/maf-file-system/"
       ;;
     c)
       CONFIG_VOLUME="$OPTARG"
@@ -88,7 +89,6 @@ do
         echo ">> $CONFIG_VOLUME does not exist. Please create it."
         exit 1
       fi
-      CONFIG_VOLUME="-v $CONFIG_VOLUME:/opt/start-config/"
       ;;
     h)
       echo "$HELP"
@@ -120,13 +120,7 @@ if [ -z "$DB_USER_PASSWD" ]; then
   DB_USER_PASSWD=$DB_USER_PASSWD_DEFAULT
 fi
 if [ -z "$CONFIG_VOLUME" ]; then
-  CONFIG_VOLUME="-v /opt/start-config/"
-fi
-if [ -z "$MAF_FS" ]; then
-  MAF_FS="-v /opt/maf-file-system/"
-fi
-if [ -z "$DB_BACKUP" ]; then
-  DB_BACKUP="-v /opt/bizdock-db-backups/"
+  CONFIG_VOLUME="/opt/start-config/"
 fi
 
 
@@ -136,14 +130,6 @@ if [ $? -eq 1 ]; then
   echo "---- NETWORK CREATION ----"
   docker network create bizdock_network
 fi
-
-
-#Create volumes
-VOLUME_TEST=$(docker volume ls | grep bizdock_backups)
-if [ $? -eq 1 ]; then
-  docker volume create --name=bizdock_backups
-fi
-
 
 #Run Bizdock Database
 if [ "$DISTANT_DB" = "false" ]; then
@@ -157,15 +143,20 @@ if [ "$DISTANT_DB" = "false" ]; then
     fi
     echo "---- RUNNING DATABASE CONTAINER ----"
     echo ">> By default, the database dump is done every day at 2 am."
-    echo ">> To change that, please create a 'startup.sh' script in $DB_BACKUP that adds a crontab file"
-    echo ">>You can start from the default file in $DB_BACKUP"
+    if [ ! -z "$MAF_FS" ]; then
+      OUTPUT="${MAF_FS}/outputs:"
+    else
+      OUTPUT=
+    fi
     docker run --name=bizdockdb -d --net=bizdock_network $DB_HOST \
       -v bizdock_prod_database:/var/lib/mysql/ \
-      -v $DB_BACKUP:/var/opt/backups/ \
+      -v ${OUTPUT}/var/opt/db/dumps/ \
+      -v $DB_SCRIPTS/var/opt/db/cron/ \
       -e MYSQL_ROOT_PASSWORD=root \
       -e MYSQL_DATABASE="$DB_NAME" \
       -e MYSQL_USER="$DB_USER" \
       -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
+      -e MYSQL_DATABASE="$DB_NAME" \
       taf/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
 
     #wait 10 seconds to give time to DB to start correctly before bizdock
@@ -193,23 +184,18 @@ fi
 #Run Bizdock
 echo "---- RUNNING BIZDOCK ----"
 INSTANCE_TEST=$(docker ps -a | grep -e "bizdock$")
-if [ $? -eq 1 ]; then
-  docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
-    -v /var/opt \
-    -v /opt/mysqldump \
-    $CONFIG_VOLUME \
-    $MAF_FS \
-    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-    taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
-else
+if [ $? -ne 1 ]; then
   docker stop bizdock
   docker rm bizdock
-  docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
-    -v /var/opt \
-    -v /opt/mysqldump \
-    $CONFIG_VOLUME \
-    $MAF_FS \
-    -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-    taf/bizdock:11.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 fi
+
+if [ ! -z "${MAF_FS}" ]; then
+  MAF_FS="${MAF_FS}:"
+fi
+docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
+  -v /var/opt \
+  -v ${CONFIG_VOLUME}/opt/start-config/ \
+  -v ${MAF_FS}/opt/artifacts/maf-file-system/ \
+  -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
+  taf/bizdock:12.0.1 --useruid $(id -u $(whoami)) --username $(whoami) --port $BIZDOCK_PORT_DEFAULT
 
