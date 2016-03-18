@@ -64,10 +64,6 @@ You can give different arguments to the ```run.sh``` script :
 * ```-i``` : reset and initialize the database
 * ```-h``` : print help
 
-#### First usage
-
-The first time you run the script, you need to pass the ```-i```argument to initialize the database.
-
 ## Database
 
 [MariaDB](https://mariadb.org/) is the database used by BizDock.
