@@ -5,12 +5,12 @@ HELP=$'Available options: \n\t-P - main Bizdock port\n\t-d - start a basic datab
 DB_NAME_DEFAULT='maf'
 DB_USER_DEFAULT='maf'
 DB_USER_PASSWD_DEFAULT='maf'
-DB_NAME=
-DB_USER=
-DB_USER_PASSWD=
+DB_NAME=""
+DB_USER=""
+DB_USER_PASSWD=""
 DB_HOST=""
-CONFIG_VOLUME=
-DB_SCRIPTS=
+CONFIG_VOLUME=""
+DB_SCRIPTS=""
 BIZDOCK_PORT=8080
 BIZDOCK_PORT_DEFAULT=8080
 DISTANT_DB=false
@@ -123,7 +123,6 @@ if [ -z "$CONFIG_VOLUME" ]; then
   CONFIG_VOLUME="/opt/start-config/"
 fi
 
-
 #Create network
 NETWORK_TEST=$(docker network ls | grep bizdock_network)
 if [ $? -eq 1 ]; then
@@ -152,7 +151,7 @@ if [ "$DISTANT_DB" = "false" ]; then
       -v bizdock_prod_database:/var/lib/mysql/ \
       -v ${OUTPUT}/var/opt/db/dumps/ \
       -v $DB_SCRIPTS/var/opt/db/cron/ \
-      -e MYSQL_ROOT_PASSWORD=root \
+      -e MYSQL_ROOT_PASSWORD="root" \
       -e MYSQL_DATABASE="$DB_NAME" \
       -e MYSQL_USER="$DB_USER" \
       -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
@@ -192,10 +191,16 @@ fi
 if [ ! -z "${MAF_FS}" ]; then
   MAF_FS="${MAF_FS}:"
 fi
+
 docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_PORT_DEFAULT \
-  -v /var/opt \
-  -v ${CONFIG_VOLUME}/opt/start-config/ \
+  -v ${CONFIG_VOLUME}:/opt/start-config/ \
   -v ${MAF_FS}/opt/artifacts/maf-file-system/ \
   -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-  taf/bizdock:12.0.1 --useruid $(id -u $(whoami)) --username $(whoami) --port $BIZDOCK_PORT_DEFAULT
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=$DB_NAME \
+  -e MYSQL_USER=$DB_USER \
+  -e MYSQL_PASSWORD=$DB_USER_PASSWD \
+  -e MYSQL_DATABASE=$DB_NAME \
+  -e BIZDOCK_PORT=$BIZDOCK_PORT_DEFAULT \
+  taf/bizdock:12.0.1 --useruid $(id -u $(whoami)) --username $(whoami)
 

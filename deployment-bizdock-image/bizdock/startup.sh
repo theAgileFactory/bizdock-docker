@@ -8,8 +8,7 @@ set -e
 HELP="Possible arguments :
 --help (-h)
 --useruid (-g)   : the uid of the user which is using the development environment
---username (-u)  : the name of the user which is using the development environment
---port (-p)      : the BizDock port"
+--username (-u)  : the name of the user which is using the development environment"
 
 while [[ $# > 0 ]]
 do
@@ -27,10 +26,6 @@ do
       userUid=$2
       shift
       ;;
-    -p|--port)
-      BIZDOCK_PORT=$2
-      shift
-      ;;
     *)
       echo "Unknown parameter $1 exiting"
       exit 1
@@ -42,7 +37,7 @@ done
 #Create a user with the right UID to allow access to the files from the host
 if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
   user=$(id -u $userName > /dev/null 2>&1; echo $?)
-  if [ $? -eq 0 ]; then
+  if [ $user -eq 1 ]; then
     useradd -u $userUid $userName
   fi
 
@@ -61,16 +56,17 @@ if [[ ! -z "$userUid" ]] && [[ ! -z "$userName" ]]  ; then
     cp /opt/start-config/maf-dbmdl/development.properties /opt/maf/maf-dbmdl/repo/environments
     cp /opt/start-config/maf-desktop/*.conf /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf && cp /opt/start-config/maf-desktop/*.xml /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf
     cp /opt/start-config/maf-desktop/*.conf /opt/maf/maf-desktop/conf && cp /opt/start-config/maf-desktop/*.xml /opt/maf/maf-desktop/conf
+    chown -R $userName.$userName /opt/maf/
   fi
+
   if [ "$CONFIGURE_DB_INIT" = true ]; then
-    #FIXME
 echo ">> Reseting the database schema"
-mysql -h bizdockdb -u root --password=root <<EOF
-DROP SCHEMA IF EXISTS maf;
-CREATE SCHEMA IF NOT EXISTS maf 
+mysql -h bizdockdb -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
+DROP SCHEMA IF EXISTS ${MYSQL_DATABASE};
+CREATE SCHEMA IF NOT EXISTS ${MYSQL_DATABASE} 
 DEFAULT CHARACTER SET utf8;
-CREATE USER IF NOT EXISTS 'maf'@'%' IDENTIFIED BY 'maf';
-GRANT ALL ON maf.* TO 'maf'@'%';
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_USER}';
+GRANT ALL ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
 EOF
   fi
 
@@ -87,7 +83,7 @@ EOF
   fi
 
   if [ "$CONFIGURE_DB_INIT" = true ]; then
-    mysql -h bizdockdb -u root --password=root maf < /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/sql/init_base.sql
+    mysql -h bizdockdb -u $MYSQL_USER --password=${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /opt/maf/maf-desktop/server/maf-desktop-app-dist/conf/sql/init_base.sql
   fi
 
   N=$(echo $(cat /opt/start-config/maf-desktop/framework.conf | grep saml.sso.config | cut -d '=' -f 2 | cut -d '"' -f 2 | grep -o "/" | wc -l)+1 | bc)
