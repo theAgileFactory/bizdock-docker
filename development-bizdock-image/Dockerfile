@@ -60,6 +60,9 @@ ADD bizdock-packaging.properties /opt/prepare/bizdock-packaging.properties
 ADD framework.conf /opt/prepare/framework.conf
 ADD environment.conf /opt/prepare/environment.conf
 
+#Data for testing the application
+ADD init_data.sql /opt/prepare/init_data.sql
+
 RUN chmod u+x /opt/prepare/startup.sh;chmod u+x /opt/prepare/create_maf_fs.sh;chmod u+x /opt/prepare/interactive.sh;chmod u+x /opt/prepare/build.sh;chmod u+x /opt/prepare/db.sh
 
 ENTRYPOINT ["/opt/prepare/startup.sh"]
