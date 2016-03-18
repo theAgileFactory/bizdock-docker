@@ -56,6 +56,8 @@ You can give different arguments to the ```run.sh``` script :
 * ```-s``` : define the database schema (name of the database)
 * ```-u``` : define the user of the database (default: maf)
 * ```-p``` : define the password for the database user (default: maf)
+* ```-r``` : define the password for the database user root
+* ```-b``` : define a mount point (on your host) where to store cron job for database dumps
 * ```-H``` : define the database host and port (ex.: HOST:PORT) - In this case, no database container will be launched
 * ```-c``` : define a mount point (on your host) where to store configuration files
 * ```-m``` : define a mount point (on your host) where the maf-file-system is stored
@@ -73,6 +75,7 @@ In addition of the official Docker image of MariaDB, we add to our image a cron 
 
 By default, the dump is done every day at 2 AM.
 If you want to modify it, you simply need to modify the ```crontabFile``` on your host and restart the database container (```docker restart bizdockdb```).
+The file is located on the path you chose for parameter ```-b```.
 
 ## Configuration files
 
@@ -84,6 +87,8 @@ To enable the modifications, you simply need to restart the container using ```d
 ### Note
 
 This is important to write paths with a ```/``` at the end of them to allow the folders creation for the ```maf-file-system```.
+
+This is also important to keep consistency between arguments you give to the ```run.sh``` script and the configuration files (ports, user of the database,...).
 
 ## Logs
 
