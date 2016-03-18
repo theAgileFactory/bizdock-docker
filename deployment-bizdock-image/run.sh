@@ -170,9 +170,9 @@ if [ "$DISTANT_DB" = "false" ]; then
       -e MYSQL_DATABASE="$DB_NAME" \
       taf/bizdock_mariadb:10.1.12 --useruid $(id -u $(whoami)) --username $(whoami)
 
-    #wait 10 seconds to give time to DB to start correctly before bizdock
-    echo ">> Wait 10 seconds to give time to database container to initialize"
-    sleep 10
+    #wait 15 seconds to give time to DB to start correctly before bizdock
+    echo ">> Wait 15 seconds to give time to database container to initialize"
+    sleep 15
 
     #test if db container is up
     if [ -z "$(docker ps | grep bizdockdb$)" ]; then
