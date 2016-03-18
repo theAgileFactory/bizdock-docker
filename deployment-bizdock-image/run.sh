@@ -1,13 +1,15 @@
 #!/bin/sh
 
-HELP=$'Available options: \n\t-P - main Bizdock port\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - database password\n\t-b - Path to store db backup\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-b - optional mount of the db dump script\n\t-h - help\n\t-i - initialize database' 
+HELP=$'Available options: \n\t-P - main Bizdock port\n\t-d - start a basic database container with defaults options\n\t-s - database schema (name of the database)\n\t-u - database user\n\t-p - user database password\n\t-r - root database password\n\t-b - Path to store db backup\n\t-H - database host and port in case the db is not set up as a docker instance (ex. HOST:PORT)\n\t-c - mount point for configuration files\n\t-m - optional mount of the maf-file-system volume on the host\n\t-b - optional mount of the db dump script\n\t-h - help\n\t-i - initialize database' 
 
 DB_NAME_DEFAULT='maf'
 DB_USER_DEFAULT='maf'
 DB_USER_PASSWD_DEFAULT='maf'
+DB_ROOT_PASSWD_DEFAULT='root'
 DB_NAME=""
 DB_USER=""
 DB_USER_PASSWD=""
+DB_ROOT_PASSWD=""
 DB_HOST=""
 CONFIG_VOLUME=""
 DB_SCRIPTS=""
@@ -24,7 +26,7 @@ then
 fi
 
 # Process the arguments
-while getopts ":P:ds:u:p:H:c:m:b:hi" option
+while getopts ":P:ds:u:p:r:H:c:m:b:hi" option
 do
   case $option in
     P)
@@ -59,6 +61,13 @@ do
         DB_USER_PASSWD="$OPTARG"
       else
         DB_USER_PASSWD=$DB_USER_PASSWD_DEFAULT
+      fi
+      ;;
+    r)
+      if [ -z "$DB_ROOT_PASSWD" ]; then
+        DB_ROOT_PASSWD="$OPTARG"
+      else
+        DB_ROOT_PASSWD=$DB_ROOT_PASSWD_DEFAULT
       fi
       ;;
     H)
@@ -119,6 +128,9 @@ fi
 if [ -z "$DB_USER_PASSWD" ]; then
   DB_USER_PASSWD=$DB_USER_PASSWD_DEFAULT
 fi
+if [ -z "$DB_ROOT_PASSWD" ]; then
+  DB_ROOT_PASSWD=$DB_ROOT_PASSWD_DEFAULT
+fi
 if [ -z "$CONFIG_VOLUME" ]; then
   CONFIG_VOLUME="/opt/start-config/"
 fi
@@ -151,7 +163,7 @@ if [ "$DISTANT_DB" = "false" ]; then
       -v bizdock_prod_database:/var/lib/mysql/ \
       -v ${OUTPUT}/var/opt/db/dumps/ \
       -v $DB_SCRIPTS/var/opt/db/cron/ \
-      -e MYSQL_ROOT_PASSWORD="root" \
+      -e MYSQL_ROOT_PASSWORD="$DB_ROOT_PASSWD" \
       -e MYSQL_DATABASE="$DB_NAME" \
       -e MYSQL_USER="$DB_USER" \
       -e MYSQL_PASSWORD="$DB_USER_PASSWD" \
@@ -196,7 +208,7 @@ docker run --name=bizdock -d --net=bizdock_network -p $BIZDOCK_PORT:$BIZDOCK_POR
   -v ${CONFIG_VOLUME}:/opt/start-config/ \
   -v ${MAF_FS}/opt/artifacts/maf-file-system/ \
   -e CONFIGURE_DB_INIT=$CONFIGURE_DB \
-  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_ROOT_PASSWORD=$DB_ROOT_PASSWD \
   -e MYSQL_DATABASE=$DB_NAME \
   -e MYSQL_USER=$DB_USER \
   -e MYSQL_PASSWORD=$DB_USER_PASSWD \
