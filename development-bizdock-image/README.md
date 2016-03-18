@@ -58,7 +58,9 @@ Once it is finished, you can run the ```/opt/artifacts/db.sh``` script to update
 
 When everything is built, you simply need to go into ```/opt/artifacts/maf-desktop-app``` directory and run ```activator``` to launch the [Java Play Framework](https://www.playframework.com/). When it is launched, you simply need to execute ```run 9000``` to run BizDock. 
 
-Bizdock will be available on ```localhost:8080``` by default (use ```-p``` when launching ```bizdockctl.sh``` to use another port).
+Bizdock will be available on ```localhost:8080``` by default.
+To use another port, use the ```-p``` argument.
+Be careful to define in ```framework.conf``` the same port as given by ```-p``` argument for ```maf.public.url``` and ```swagger.api.basepath```.
 
 Then, you can import the folders into an IDE like [eclipse](https://www.eclipse.org/) to develop on your host.
 By default the projects built using ```buid.sh``` are eclispe compatible.
